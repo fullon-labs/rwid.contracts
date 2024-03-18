@@ -1,0 +1,146 @@
+# https://github.com/EOSIO/eos-vm/blob/master/.clang-format
+# BasedOnStyle样式信息：
+# LLVM：一种遵循LLVM coding standards的样式；
+# Google：一种遵循Google’s C++ style guide的样式；
+# Chromium：一种遵循Chromium’s style guide的样式；
+# Mozilla：一种遵循Mozilla’s style guide的样式；
+# WebKit：一种遵循WebKit’s style guide的样式；
+BasedOnStyle: LLVM
+# 缩进宽度
+IndentWidth: 4
+# Tab使用, 没有必要使用, 直接Never
+UseTab: Never
+# 代码列字符上限
+ColumnLimit: 180
+
+Language: Cpp
+# always align * and & to the type
+# 是否开启文件分析, 根据文件中的*/&使用情况更新clang-format设定, 在无法决定时, 使用PointerAlignment代替, 不建议开启
+DerivePointerAlignment: false
+# 指针对齐, 建议Right
+PointerAlignment: Left
+
+# regroup includes to these classes
+IncludeCategories:
+   - Regex: '(<|"(eosio)/)'
+     Priority: 4
+   - Regex: '(<|"(boost)/)'
+     Priority: 3
+   - Regex: '(<|"(llvm|llvm-c|clang|clang-c)/'
+     Priority: 3
+   - Regex: '<[[:alnum:]]+>'
+     Priority: 2
+   - Regex: '.*'
+     Priority: 1
+
+IncludeBlocks: Regroup
+
+# set indent for public, private and protected
+# 访问声明符缩进
+AccessModifierOffset: -2
+
+# make line continuations twice the normal indent
+# 函数调用续行对齐, 建议4
+ContinuationIndentWidth: 0
+
+# add missing namespace comments
+# 是否强制在namespace结尾增加 // namespace xxx, 建议为true
+FixNamespaceComments: true
+
+# - Never: 永远不做操作, 即一个参数一行
+# - BinPack: 两个参数一行
+# - CurrentLine: 所有参数放置于一行, 如果放不下, 就一个参数一行
+# - NextLine: 同CurrentLine有点像, 唯一不同就是如果放不行, 将剩余参数放置于下一行(即不自动一参一行)
+PackConstructorInitializers: Never
+# 访问限定后是否添加空行, 建议Never
+EmptyLineAfterAccessModifier: Never
+#  允许参数在下一行上
+AllowAllArgumentsOnNextLine: true
+# 允许声明的参数在下一行上
+AllowAllParametersOfDeclarationOnNextLine: true
+# add spaces to braced list i.e. int* foo = { 0, 1, 2 }; instead of int* foo = {0,1,2};
+# 大括号列表风格
+# 重要区别:
+# 括号列表中没有空格。
+# 在结束大括号前不能换行。
+# 用连续缩进，而不是用块缩进。
+Cpp11BracedListStyle: true
+# 开括号(开圆括号、开尖括号、开方括号)后的对齐: Align, DontAlign, AlwaysBreak(总是在开括号后换行)
+AlignAfterOpenBracket: Align
+# 连续赋值时，对齐所有等号
+AlignConsecutiveAssignments: true
+# 连续声明对齐
+AlignConsecutiveDeclarations: true
+# 竖直对齐表达式的操作数
+AlignOperands: true
+# 对齐尾部注释
+AlignTrailingComments: true
+# 允许将简单的语句块放到一个单行.
+# 例如, 这允许 将 语句 “if (a) { return; }” 放到一个单行.
+AllowShortCaseLabelsOnASingleLine: true
+# 如果为真（true）, 很短的情况下的标签将会被放到单独的行。
+AllowShortFunctionsOnASingleLine: All
+# 允许短语法块在单行上
+AllowShortBlocksOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+# 有三个选项：No，MultiLine，Yes
+
+# No不会强制在模板声明处断行，需要考虑PenaltyBreakTemplateDeclaration。
+# template <typename T> T foo() {
+# }
+# template <typename T> T foo(int aaaaaaaaaaaaaaaaaaaaa,
+#                             int bbbbbbbbbbbbbbbbbbbbb) {
+# }
+
+# MultiLine仅在接下来的函数/类声明参数需要跨行时才会在模板处断行。
+# template <typename T> T foo() {
+# }
+# template <typename T>
+# T foo(int aaaaaaaaaaaaaaaaaaaaa,
+#       int bbbbbbbbbbbbbbbbbbbbb) {
+# }
+
+# Yes总是在模板声明之后进行断行。
+# template <typename T>
+# T foo() {
+# }
+# template <typename T>
+# T foo(int aaaaaaaaaaaaaaaaaaaaa,
+#       int bbbbbbbbbbbbbbbbbbbbb) {
+# }
+AlwaysBreakTemplateDeclarations: true
+# 如果为false，函数调用变量要么都在同一行上，要么每个变量都独自在一行。
+# 如果true，则会把变量合理打包放在一行上，显得更紧凑。
+BinPackArguments: false
+# 如果false，函数声明的参数或者函数定义的参数要么在同一行上，要么每个变量都独自在一行。
+# 如果true，则会把变量合理打包放在一行上，显得更紧凑。
+# BinPackParameters: false
+BinPackParameters: false
+### use this with clang9
+BreakBeforeBraces: Custom
+BraceWrapping:
+   #AfterCaseLabel: true
+   AfterClass: false
+   AfterControlStatement: false
+   AfterEnum: false
+   AfterFunction: false
+   AfterNamespace: false
+   AfterStruct: false
+   AfterUnion: false
+   AfterExternBlock: false
+   BeforeCatch: false
+   BeforeElse: false
+
+# BeforeColon断行冒号前和逗号后的构造函数初始化式
+# BeforeComma在冒号和逗号之前断行构造函数的初始化式，并将逗号与冒号对齐。
+# AfterColon在冒号和逗号后面断行构造函数初始化式。
+BreakConstructorInitializers: AfterColon
+# 紧凑命名空间
+# 如果为true，则连续的名称空间声明将在同一行上。如果为false，则每个名称空间都在新行中声明
+CompactNamespaces: true
+IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+NamespaceIndentation: None
+ReflowComments: false
+SortIncludes: true
+SortUsingDeclarations: true
