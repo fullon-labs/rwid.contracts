@@ -25,7 +25,6 @@ using namespace wasm::db;
 
 using namespace eosio;
 
-static constexpr name      NFT_BANK    = "did.ntoken"_n;
 static constexpr eosio::name active_perm{"active"_n};
 
 
