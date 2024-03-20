@@ -15,3 +15,6 @@ set(VOTING_ICON_URI   "voting.png#db28cd3db6e62d4509af3644ce7d377329482a14bb4bfa
 add_subdirectory(realme.auth)
 add_subdirectory(realme.dao)
 add_subdirectory(realme.owner)
+add_subdirectory(amax.did)
+add_subdirectory(did.ntoken)
+add_subdirectory(did.recover)
