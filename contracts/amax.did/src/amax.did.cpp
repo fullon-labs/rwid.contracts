@@ -155,7 +155,7 @@ using namespace std;
                         const nsymbol& nft_id ) {
 
       CHECKC( has_auth(_self) || has_auth(_gstate.admin), err::NO_AUTH, "no auth for operate" )
-      CHECKC( user_reward_quant.amount > 0, err::PARAM_ERROR, "user_reward_quant amount inpostive");
+      CHECKC( user_reward_quant.amount >= 0, err::PARAM_ERROR, "user_reward_quant amount inpostive");
       CHECKC( user_charge_quant.amount > 0, err::PARAM_ERROR, "user_charge_quant amount does not exist");
       
 
