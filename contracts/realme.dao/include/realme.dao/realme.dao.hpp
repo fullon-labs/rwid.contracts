@@ -89,32 +89,14 @@ class [[eosio::contract("realme.dao")]] realme_dao : public contract {
    ACTION checkauth( const name& auth_contract, const name& account );
    //call by auth inline transaction
    ACTION delauth(const name& auth_contract, const name& account );
-   //call by auth inline transaction
-   ACTION createorder(
-                     const uint64_t&            sn,
-                     const name&                auth_contract,
-                     const name&                account,
-                     const bool&                manual_check_required,
-                     const uint8_t&             score,
-                     const recover_target_type& recover_target);
-
-   //call by auth inline transaction
-   ACTION setscore   (
-                        const name& auth_contract, 
-                        const name& account,
-                        const uint64_t& order_id,
-                        const uint8_t& score);
-            
-   //anyone can close order as long as conditions are met
-   ACTION closeorder(   const name& submitter, const uint64_t& order_id );
-   //anyone can close order as long as conditions are met
-   ACTION delorder(     const name& submitter, const uint64_t& order_id );
-
+   
    ACTION addauditconf( const name&   check_contract, 
                         const name&    audit_type,
                         const audit_conf_s& conf);
 
    ACTION delauditconf( const name& contract_name );
+
+   ACTION updatepubkey(const name& auth_contract, const name& account, const public_key& publickey);
 
    private:
       global_singleton    _global;

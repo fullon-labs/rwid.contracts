@@ -37,12 +37,14 @@ class realme_dao {
                      const uint8_t&             score,
                      const recover_target_type& recover_target);
             
-
+            ACTION updatepubkey(const name& auth_contract, const name& account, const public_key& publickey);
+            
             using newaccount_action       = eosio::action_wrapper<"newaccount"_n,   &realme_dao::newaccount>;
             using checkauth_action        = eosio::action_wrapper<"checkauth"_n,    &realme_dao::checkauth>;
             using setscore_action         = eosio::action_wrapper<"setscore"_n,     &realme_dao::setscore>;
             using createcorder_action     = eosio::action_wrapper<"createorder"_n,  &realme_dao::createorder>;
             using delauth_action     = eosio::action_wrapper<"delauth"_n,  &realme_dao::delauth>;
+            using updatepubkey_action     = eosio::action_wrapper<"updatepubkey"_n,  &realme_dao::updatepubkey>;
 };
 
 }

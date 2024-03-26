@@ -130,69 +130,8 @@ using namespace std;
       return (tmp + 9) / 10;
    }
 
-   void realme_dao::createorder(
-                        const uint64_t&            sn,
-                        const name&                auth_contract,
-                        const name&                account,
-                        const bool&                manual_check_required,
-                        const uint8_t&             score,
-                        const recover_target_type& recover_target) {
+   void realme_dao::updatepubkey(const name& auth_contract, const name& account, const public_key& publickey){
 
-      require_auth(auth_contract);
-      
-      _audit_item(auth_contract);
-
-      recover_auth_t::idx_t recoverauths(_self, _self.value);
-      auto audit_ptr     = recoverauths.find(account.value);
-      CHECKC( audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist. ");
-      map<name, int8_t> scores;
-      for ( auto& [key, value]: audit_ptr->auth_requirements ) {
-         if (value) scores[key] = -1;
-      }
-   
-      auto duration_second    = order_expiry_duration;
-      if (manual_check_required) {
-         audit_conf_t::idx_t auditconfs(_self, _self.value);
-         auto auditconf_itx = auditconfs.get_index<"audittype"_n>();
-         auto auditconf_itr =  auditconf_itx.find(RealmeCheckType::MANUAL.value);
-         CHECKC( auditconf_itr != auditconf_itx.end(), err::RECORD_NOT_FOUND,
-                           "record not existed, " + RealmeCheckType::MANUAL.to_string());
-         duration_second    = manual_order_expiry_duration;
-         scores[auditconf_itr->contract] = -1;
-      }
-
-      scores[auth_contract] = 1;
-      
-      recover_order_t::idx_t orders( _self, _self.value );
-      auto account_index 			      = orders.get_index<"accountidx"_n>();
-      auto order_itr 			         = account_index.find( account.value );
-      CHECKC( order_itr == account_index.end(), err::RECORD_EXISTING, "order already existed. ");
-
-      auto sn_index                    = orders.get_index<"snidx"_n>();
-      auto sn_itr                      = sn_index.find( sn );
-      CHECKC( sn_itr == sn_index.end(), err::RECORD_EXISTING, "sn already existed. ");
-
-      _gstate.last_order_id ++;
-      auto order_id           = _gstate.last_order_id; 
-      auto now                = current_time_point();
-
-      orders.emplace( _self, [&]( auto& row ) {
-         row.id 					      = order_id;
-         row.sn                     =  sn;
-         row.account 			      = account;
-         row.scores                 = scores;
-         row.recover_type           = UpdateActionType::PUBKEY;
-         row.recover_target         = recover_target;
-         row.pay_status             = PayStatus::NOPAY;
-         row.created_at             = now;
-         row.expired_at             = now + eosio::seconds(duration_second);
-         row.status                 = OrderStatus::PENDING;
-      });
-   
-   }
-
-
-   void realme_dao::setscore( const name& auth_contract, const name& account, const uint64_t& order_id, const uint8_t& score) {
       require_auth(auth_contract);
 
       recover_auth_t::idx_t recoverauths(_self, _self.value);
@@ -201,83 +140,16 @@ using namespace std;
       CHECKC(audit_ptr->auth_requirements.count(auth_contract) > 0 , err::NO_AUTH, "no auth for set score: " + account.to_string());
 
       _audit_item(auth_contract);
-      
-      recover_order_t::idx_t orders(_self, _self.value);
-      auto order_ptr     = orders.find(order_id);
-      CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. ");
-      CHECKC(order_ptr->account == account , err::PARAM_ERROR, "account error: "+ account.to_string() )
-
-      CHECKC(order_ptr->expired_at > current_time_point(), err::TIME_EXPIRED,"order already time expired")
-      auto end_score = (score == 0? 0 : 1);
-      orders.modify(*order_ptr, _self, [&]( auto& row ) {
-         row.scores[auth_contract]     = end_score;
-         row.updated_at                = current_time_point();
-      });
-   }
-
-   void realme_dao::closeorder( const name& submitter, const uint64_t& order_id) {
-      CHECKC( has_auth(submitter) , err::NO_AUTH, "realme_dao no auth for operate" )
-
-      recover_order_t::idx_t orders(_self, _self.value);
-      auto order_ptr     = orders.find(order_id);
-      CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. "); 
-      CHECKC(order_ptr->expired_at > current_time_point(), err::TIME_EXPIRED, "order already time expired")
-
-      audit_conf_t::idx_t auditscores(_self, _self.value);
-      auto auditscore_idx = auditscores.get_index<"audittype"_n>();
-      auto auditscore_itr =  auditscore_idx.find(RealmeCheckType::MANUAL.value);
-      auto require_itr =  auditscore_idx.find(RealmeCheckType::REQUIRE.value);
-
-      auto total_score = 0;
-      auto require_score = 1;
-      for (auto& [key, value]: order_ptr->scores) {
-         // CHECKC(value > 0 , err::NEED_REQUIRED_CHECK, "required check: " + key.to_string())
-         if ( require_itr != auditscore_idx.end() && require_itr->contract == key){
-            require_score = value;
-         }
-         if( auditscore_itr == auditscore_idx.end() || auditscore_itr->contract != key ) {
-            total_score += value; 
-         }
-      }
-
-      recover_auth_t::idx_t recoverauths(_self, _self.value);
-      auto audit_ptr     = recoverauths.find(order_ptr->account.value);
-      CHECKC( audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "recover auth not exist. ");
-      CHECKC( total_score >= 1, err::SCORE_NOT_ENOUGH, "score not enough" );
-      CHECKC( require_score == 1, err::SCORE_NOT_ENOUGH, "score not enough:" + require_itr->contract.to_string() );
 
       recoverauths.modify( *audit_ptr, _self, [&]( auto& row ) {
          row.last_recovered_at  = current_time_point();
       });
-
-      _update_auth(order_ptr->account, std::get<eosio::public_key>(order_ptr->recover_target));
-      orders.erase(order_ptr);
-   }
-
-   void realme_dao::delorder( const name& submitter, const uint64_t& order_id) {
-      CHECKC( has_auth(submitter) , err::NO_AUTH, "no auth for operate" )
-
-      recover_order_t::idx_t orders(_self, _self.value);
-      auto order_ptr     = orders.find(order_id);
-      CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. "); 
-
-      CHECKC(order_ptr->expired_at < current_time_point(), err::STATUS_ERROR, "order has not expired")
-      orders.erase(order_ptr);
+      
+      _update_auth(audit_ptr->account, publickey);
    }
 
    void realme_dao::addauditconf( const name& check_contract, const name& audit_type, const audit_conf_s& conf ) {
       CHECKC(has_auth(_self),  err::NO_AUTH, "no auth for operate"); 
-
-      CHECKC(  audit_type == RealmeCheckType::MOBILENO || 
-               audit_type == RealmeCheckType::SAFETYANSWER ||
-               audit_type == RealmeCheckType::REQUIRE ||
-               audit_type == RealmeCheckType::DID ||
-               audit_type == RealmeCheckType::TELEGRAM ||
-               audit_type == RealmeCheckType::FACEBOOK ||
-               audit_type == RealmeCheckType::FACEBOOK ||
-               audit_type == RealmeCheckType::WHATSAPP ||
-               audit_type == RealmeCheckType::MAIL ||
-               audit_type == RealmeCheckType::MANUAL , err::PARAM_ERROR, "audit type error: " + audit_type.to_string())
 
       CHECKC( conf.status == ContractStatus::RUNNING || conf.status == ContractStatus::STOPPED, 
                      err::PARAM_ERROR, "contract status error " + conf.status.to_string() )
