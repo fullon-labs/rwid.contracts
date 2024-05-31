@@ -79,26 +79,8 @@ class [[eosio::contract("realme.auth")]] amax_auth : public contract {
     * @return ACTION 
     */
    ACTION newaccount( const name& admin, const name& creator, const name& account, const string& info, const authority& active );
-
-   ACTION createorder(  const uint64_t&            sn,
-                        const name&                admin,
-                        const name&                account,
-                        const bool&                manual_check_required,
-                        const uint8_t&             score,
-                        const recover_target_type& recover_target
-                        );
-
-   /**
-    * @brief - this is to set score for user initiated check action. it can be omitted if user fails to meee the condition 
-    * 
-    * @param admin 
-    * @param account 
-    * @param order_id 
-    * @param score 
-    * @return ACTION 
-    */
-   ACTION setscore( const name& admin, const name& account, const uint64_t& order_id, const uint8_t& score );
-
+   
+   ACTION updatepubkey( const name& admin, const name& account, const public_key& pubkey);
    /**
     * @brief 
     * 

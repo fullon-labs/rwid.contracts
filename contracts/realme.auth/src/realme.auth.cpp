@@ -72,29 +72,14 @@ namespace amax {
       delauth_act.send( get_self(),  account);
    }
 
-   void amax_auth::createorder(  
-                        const uint64_t&            sn,
-                        const name&                auth,
-                        const name&                account,
-                        const bool&                manual_check_required,
-                        const uint8_t&             score,
-                        const recover_target_type& recover_target) {
-      _check_action_auth(auth, ActionType::CREATECORDER);
-      realme_dao::createcorder_action createcorder_act(_gstate.amax_dao_contract, { {get_self(), ACTIVE_PERM} });
-      createcorder_act.send( sn, get_self(), account, manual_check_required, score, recover_target);
+   void amax_auth::updatepubkey( const name& admin, const name& account, const public_key& pubkey){
+      _check_action_auth(admin, ActionType::UPDATEPUBKEY);
+
+      realme_dao::updatepubkey_action updatepubkey_act(_gstate.amax_dao_contract, { {get_self(), ACTIVE_PERM} });
+      updatepubkey_act.send(get_self(), account, pubkey);
    }
 
-   void amax_auth::setscore(const name& auth,
-                                 const name& account,
-                                 const uint64_t& order_id,
-                                 const uint8_t& score ) {
-
-      _check_action_auth(auth, ActionType::SETSCORE);
-      realme_dao::setscore_action setscore_act(_gstate.amax_dao_contract, { {get_self(), ACTIVE_PERM} });
-      setscore_act.send(get_self(), account, order_id, score);
-   }
-
-    void amax_auth::setauth( const name& auth, const set<name>& actions ) {
+   void amax_auth::setauth( const name& auth, const set<name>& actions ) {
       require_auth(_self);      
       CHECKC(is_account(auth), err::PARAM_ERROR,  "account invalid: " + auth.to_string());
 
@@ -113,7 +98,7 @@ namespace amax {
       }
    }
 
-    void amax_auth::delauth(  const name& account ) {
+   void amax_auth::delauth(  const name& account ) {
       require_auth(_self);    
 
       auth_t::idx_t auths(_self, _self.value);
