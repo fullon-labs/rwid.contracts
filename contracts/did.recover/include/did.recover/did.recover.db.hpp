@@ -14,7 +14,7 @@
 #include <type_traits>
 
 
-namespace amax {
+namespace flon {
 
 using namespace std;
 using namespace eosio;
@@ -101,4 +101,4 @@ TBL auth_t {
 
     EOSLIB_SERIALIZE( auth_t, (auth)(actions) )
 };
-} //namespace amax
+} //namespace flon

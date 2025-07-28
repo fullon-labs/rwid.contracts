@@ -1,8 +1,8 @@
 #!/bin/bash
 amcli wallet unlock --password PW5JN2qJarqzKEQC6mSB79RWc5LdUS2don2SMfZ41efbu1oGveL45
 
-rd=nrealme.dao
-ro=nrealmeowner
+rd=nrwid.dao
+ro=nrwidowner
 mblra=nmbl.auth
 
 tcli(){ 
@@ -28,14 +28,14 @@ create_account
 echo "----账号准备完成-----"
 
 echo "合约部署"
-mset $rd realme.dao
-mset $ro realme.owner
-mset $mblra realme.auth
+mset $rd rwid.dao
+mset $ro rwid.owner
+mset $mblra rwid.auth
 
 echo "合约部署完成"
 
 echo "合约初始化"
-echo mpush $ro init '["'$rd'","0.10000000 AMAX","0.10000000 AMAX"]' -p$ro
+echo mpush $ro init '["'$rd'","0.10000000 flon","0.10000000 flon"]' -p$ro
 mpush $rd init '[70,"'$ro'"]' -p$rd
 mpush $mblra init '["'$rd'","'$ro'"]' -p$mblra
 

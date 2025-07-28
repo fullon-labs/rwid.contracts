@@ -2,7 +2,7 @@ add_contract(did.recover did.recover ${CMAKE_CURRENT_SOURCE_DIR}/src/did.recover
 
 target_include_directories(did.recover
    PUBLIC
-   ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/../amax.bootdao/include)
+   ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/../flon.bootdao/include)
 
 set_target_properties(did.recover
    PROPERTIES

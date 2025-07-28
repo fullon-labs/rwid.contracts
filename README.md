@@ -1,4 +1,4 @@
-# realme.contract
+# rwid.contract
 
 
 
@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab.starnest.ltd/wasm/realme.contract.git
+git remote add origin https://gitlab.starnest.ltd/wasm/rwid.contract.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](http://gitlab.starnest.ltd/wasm/realme.contract/-/settings/integrations)
+- [ ] [Set up project integrations](http://gitlab.starnest.ltd/wasm/rwid.contract/-/settings/integrations)
 
 ## Collaborate with your team
 

@@ -13,7 +13,7 @@
 #include <set>
 #include <type_traits>
 
-namespace amax {
+namespace flon {
 
 using namespace std;
 using namespace eosio;
@@ -126,4 +126,4 @@ TBL account_t {
     typedef eosio::multi_index< "accounts"_n, account_t > idx_t;
 };
 
-} //namespace amax
+} //namespace flon

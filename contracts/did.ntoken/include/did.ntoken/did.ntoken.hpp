@@ -8,7 +8,7 @@
 
 #include <did.ntoken/did.ntoken.db.hpp>
 
-namespace amax {
+namespace flon {
 
 using std::string;
 using std::vector;
@@ -16,7 +16,7 @@ using std::vector;
 using namespace eosio;
 
 /**
- * The `did.ntoken` sample system contract defines the structures and actions that allow users to create, issue, and manage tokens for AMAX based blockchains. It demonstrates one way to implement a smart contract which allows for creation and management of tokens. It is possible for one to create a similar contract which suits different needs. However, it is recommended that if one only needs a token with the below listed actions, that one uses the `did.ntoken` contract instead of developing their own.
+ * The `did.ntoken` sample system contract defines the structures and actions that allow users to create, issue, and manage tokens for FLON based blockchains. It demonstrates one way to implement a smart contract which allows for creation and management of tokens. It is possible for one to create a similar contract which suits different needs. However, it is recommended that if one only needs a token with the below listed actions, that one uses the `did.ntoken` contract instead of developing their own.
  *
  * The `did.ntoken` contract class also implements two useful public static methods: `get_supply` and `get_balance`. The first allows one to check the total supply of a specified token, created by an account and the second allows one to check the balance of a token for a specified account (the token creator account has to be specified as well).
  *
@@ -117,4 +117,4 @@ class [[eosio::contract("did.ntoken")]] didtoken : public contract {
       global_singleton    _global;
       global_t            _gstate;
 };
-} //namespace amax
+} //namespace flon

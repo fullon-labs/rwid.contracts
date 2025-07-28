@@ -10,7 +10,7 @@
 #include <wasm_db.hpp>
 #include <utils.hpp>
 
-namespace amax {
+namespace flon {
 
 using std::string;
 
@@ -41,7 +41,7 @@ enum class err: uint8_t {
 };
 
 /**
- * The `did.recover` sample system contract defines the structures and actions that allow users to create, issue, and manage tokens for AMAX based blockchains. It demonstrates one way to implement a smart contract which allows for creation and management of tokens. It is possible for one to create a similar contract which suits different needs. However, it is recommended that if one only needs a token with the below listed actions, that one uses the `did.recover` contract instead of developing their own.
+ * The `did.recover` sample system contract defines the structures and actions that allow users to create, issue, and manage tokens for flon based blockchains. It demonstrates one way to implement a smart contract which allows for creation and management of tokens. It is possible for one to create a similar contract which suits different needs. However, it is recommended that if one only needs a token with the below listed actions, that one uses the `did.recover` contract instead of developing their own.
  *
  * The `did.recover` contract class also implements two useful public static methods: `get_supply` and `get_balance`. The first allows one to check the total supply of a specified token, created by an account and the second allows one to check the balance of a token for a specified account (the token creator account has to be specified as well).
  *
@@ -86,8 +86,8 @@ class [[eosio::contract("did.recover")]] did_recover : public contract {
 
    ACTION delorder(  const name& submitter, const uint64_t& order_id );
 
-   [[eosio::on_notify("amax.token::transfer")]]
-   void on_amax_transfer(const name& from, const name& to, const asset& quant, const string& memo);
+   [[eosio::on_notify("flon.token::transfer")]]
+   void on_flon_transfer(const name& from, const name& to, const asset& quant, const string& memo);
 
    // ACTION deltable(){
 
@@ -125,4 +125,4 @@ class [[eosio::contract("did.recover")]] did_recover : public contract {
 };
 
 
-} //namespace amax
+} //namespace flon

@@ -1,10 +1,10 @@
 #include <did.recover/did.recover.hpp>
-#include <amax.token/amax.token.hpp>
-#include <amax.ntoken/amax.ntoken.db.hpp>
+#include <flon.token/flon.token.hpp>
+#include <flon.ntoken/flon.ntoken.db.hpp>
 
 static constexpr eosio::name active_permission{"active"_n};
 
-namespace amax {
+namespace flon {
    using namespace std;
 
    #define CHECKC(exp, code, msg) \
@@ -18,7 +18,7 @@ namespace amax {
       _gstate.fee_collector      = fee_collector;
    }
 
-   void did_recover::on_amax_transfer(const name& from, const name& to, const asset& quant, const string& memo) {
+   void did_recover::on_flon_transfer(const name& from, const name& to, const asset& quant, const string& memo) {
       if (from == get_self() || to != get_self()) return;
 
       CHECKC( from != to, err::ACCOUNT_INVALID, "cannot transfer to self" );

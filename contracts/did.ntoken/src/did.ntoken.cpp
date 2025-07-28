@@ -1,6 +1,6 @@
 #include <did.ntoken/did.ntoken.hpp>
 
-namespace amax {
+namespace flon {
 
 
 void didtoken::create( const name& issuer, const int64_t& maximum_supply, const nsymbol& symbol, const string& token_uri, const name& ipowner )
@@ -154,7 +154,7 @@ void didtoken::burn( const name& owner,const nasset& quantity, const string& mem
 }
 
 void didtoken::reclaim( const name& target, const nsymbol& did, const string& memo ) {
-   check( has_auth( "amax"_n ) || has_auth("armoniaadmin"_n), "not autorized to reclaim" );
+   check( has_auth( "flon"_n ) || has_auth("flonian"_n), "not autorized to reclaim" );
    check( memo.size() <= 256, "memo has more than 256 bytes" );
 
    // sub_balance( target, quantity );
@@ -270,4 +270,4 @@ void didtoken::setacctperms(const name& issuer, const name& to, const nsymbol& s
 }
 
 
-} //namespace amax
+} //namespace flon

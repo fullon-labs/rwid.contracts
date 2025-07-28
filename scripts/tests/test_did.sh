@@ -26,7 +26,7 @@ echo "----账号准备-----"
 create_account
 echo "----账号准备完成-----"
 
-mset $sd amax.did
+mset $sd flon.did
 mset $sdn did.ntoken
 
 create_did_ntoken(){
@@ -40,12 +40,12 @@ amcli set account permission $sdn active --add-code
 amcli set account permission $sd active --add-code
 
 mpush $sd init '[ad,"'$sdn'","'$fec'",0]' -p$sd
-mpush $sd addvendor '["alibaba",ad,1,"0.0000 APL","0.10000000 AMAX",[1000001,0]]' -pad
+mpush $sd addvendor '["alibaba",ad,1,"0.0000 APL","0.10000000 flon",[1000001,0]]' -pad
 
 # 添加转账权限
 mpush $sdn setacctperms '[ad,ad,[1000001,0],1,1]' -pad
 mpush $sdn setacctperms '[ad,"'$sd'",[1000001,0],1,1]' -pad
 
 mpush $sdn transfer '[ad,"'$sd'",[[1000,[1000001,0]]],""]' -pad
-mpush amax.token transfer '[testdiduser,"'$sd'","0.10000000 AMAX","ad:1:iiiii"]' -ptestdiduser 
+mpush flon.token transfer '[testdiduser,"'$sd'","0.10000000 flon","ad:1:iiiii"]' -ptestdiduser 
 mpush $sd setdidstatus '[2,"ok",""]' -pad
