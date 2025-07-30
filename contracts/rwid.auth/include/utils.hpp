@@ -7,6 +7,7 @@
 #include <eosio/asset.hpp>
 
 #include "safe.hpp"
+#include "errno.h"
 
 using namespace std;
 

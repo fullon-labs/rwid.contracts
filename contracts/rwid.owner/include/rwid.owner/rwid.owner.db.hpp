@@ -22,7 +22,7 @@ using namespace eosio;
 
 static constexpr eosio::name RECOVER_ACCOUNT    = "rwid.dao"_n;
 
-static constexpr eosio::symbol SYS_SYMB         = SYMBOL("flon", 8);
+static constexpr eosio::symbol SYS_SYMB         = SYMBOL("FLON", 8);
 static constexpr eosio::name SYS_CONTRACT       = "flon"_n;
 static constexpr eosio::name OWNER_PERM         = "owner"_n;
 static constexpr eosio::name ACTIVE_PERM        = "active"_n;

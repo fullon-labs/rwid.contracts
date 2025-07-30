@@ -2,13 +2,14 @@
 
 #include <eosio/action.hpp>
 #include <eosio/print.hpp>
+#include <eosio/asset.hpp>
 
-
-namespace amax {
+namespace flon {
 
    using eosio::checksum256;
    using eosio::ignore;
    using eosio::name;
+   using eosio::asset;
    using eosio::permission_level;
    using eosio::public_key;
 

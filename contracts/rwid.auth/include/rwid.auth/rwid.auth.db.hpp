@@ -14,7 +14,7 @@
 #include <type_traits>
 
 
-namespace amax {
+namespace flon {
 
 using namespace std;
 using namespace eosio;
@@ -45,11 +45,11 @@ namespace rwidCheckType {
 }
 
 NTBL("global") global_t {
-    name                        amax_dao_contract;
+    name                        flon_dao_contract;
     name                        rwid_owner_contract;
     name                        auth_type;   //E.g. rwidCheckType::MOBILENO
 
-    EOSLIB_SERIALIZE( global_t, (amax_dao_contract)(rwid_owner_contract)(auth_type))
+    EOSLIB_SERIALIZE( global_t, (flon_dao_contract)(rwid_owner_contract)(auth_type))
 };
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
 
@@ -84,4 +84,4 @@ TBL auth_t {
     EOSLIB_SERIALIZE( auth_t, (auth)(actions) )
 };
 
-} //namespace amax
+} //namespace flon

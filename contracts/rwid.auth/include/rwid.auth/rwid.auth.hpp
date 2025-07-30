@@ -8,10 +8,11 @@
 #include <string>
 #include <rwid.auth/rwid.auth.db.hpp>
 #include <wasm_db.hpp>
-#include <flon.system/native.hpp>
+#include <flon_system.hpp>
 #include <rwid_dao.hpp>
+#include <set>
 
-typedef std::variant<eosio::public_key, flon::string> recover_target_type;
+typedef std::variant<eosio::public_key, string> recover_target_type;
 namespace flon {
 
 using std::string;

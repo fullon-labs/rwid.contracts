@@ -4,17 +4,21 @@
 #include <eosio/print.hpp>
 #include <wasm_db.hpp>
 #include <flon_system.hpp>
+#include <eosio/asset.hpp>
+using std::string;
+using std::set;
 
-namespace amax {
+namespace flon {
 
    typedef std::variant<eosio::public_key, string> recover_target_type;
 
    using eosio::checksum256;
    using eosio::ignore;
    using eosio::name;
+   using eosio::asset;
    using eosio::permission_level;
    using eosio::public_key;
-   using amax::authority;
+   using flon::authority;
 
 class rwid_dao {
       public: 

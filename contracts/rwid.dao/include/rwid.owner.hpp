@@ -8,8 +8,7 @@
 #include <string>
 
 #include <wasm_db.hpp>
-#include<flon_system/native.hpp>
-#include<flon_system/flon.system.hpp>
+#include<flon_system.hpp>
 
 namespace flon {
 
