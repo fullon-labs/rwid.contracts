@@ -2,27 +2,27 @@
 shopt -s expand_aliases
 source ~/.bashrc
 
-con=rwid.rwow1
+con=rw.owner1
 mreg flon $con flonian
 mtran flon $con "500 FLON"
 mset $con rwid.owner
 mcli set account permission $con active --add-code
 
 
-dao=rwid.rwdao1
+dao=rw.dao1
 mreg flon $dao flonian
 mtran flon $dao "500 FLON"
 mset $dao rwid.dao
 mcli set account permission $dao active --add-code
 
-auth=rwid.rwauth1
+auth=rw.aumobile1
 mreg flon $auth flonian
 mtran flon $auth "500 FLON"
 mset $auth rwid.auth
 mcli set account permission $auth active --add-code
 
 
-authemail=rwid.email1
+authemail=rw.auemail1
 mreg flon $authemail flonian
 mtran flon $authemail "500 FLON"
 mset $authemail rwid.auth
@@ -31,7 +31,7 @@ mcli set account permission $authemail active --add-code
 
 
 
-# rwid.owner  合约初始化
+# rwid.owner  合约初始化. -测试使用
 mpush $con init '["'"${dao}"'", "1.00000000 FLON"]' -p $con
 creator=flonian  # 创建者账号
 acc=aliceaaa1112   # 目标新账号
@@ -45,31 +45,21 @@ pubkey=FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk
 -p $dao -p flonian@active 
 
 
-
-
 newpubkey=FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk
-new_acc=aliceaaa1113
+ 
+
+
+
+
+
 
 
 # rwid.auth 合约初始化
 mpush $auth init '["'"$dao"'", "'"$con"'","mobileno"]' -p $auth
 
-mpush $auth setauth \
+mpush $auth setadminauth \
 '["'"$auth"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey"]]' \
 -p $auth
-
-
-new_acc=aliceaaa1114
-mpush $auth newaccount \
-'["'"$auth"'", "'"$con"'", "'"$new_acc"'", "13312345678", {"threshold":1,"keys":[{"key":"'"$newpubkey"'", "weight":1}],"accounts":[],"waits":[]}]' \
--p $auth
-
-
-mpush $auth updateinfo \
-'["'"$auth"'", "'"$new_acc"'", "13312345678"]' \
--p $auth
-
-
 
 
 # rwid.dao 合约初始化
@@ -101,6 +91,20 @@ mpush $dao addauditconf \
 }]' \
 -p $dao
 
+
+
+
+
+
+new_acc=aliceaaa1115
+mpush $auth newaccount \
+'["'"$auth"'", "'"$con"'", "'"$new_acc"'", "13312345678", {"threshold":1,"keys":[{"key":"'"$newpubkey"'", "weight":1}],"accounts":[],"waits":[]}]' \
+-p $auth
+
+
+mpush $auth updateinfo \
+'["'"$auth"'", "'"$new_acc"'", "13312345678"]' \
+-p $auth
 
 
 
