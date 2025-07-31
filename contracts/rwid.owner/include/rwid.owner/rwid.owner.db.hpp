@@ -33,9 +33,8 @@ static constexpr eosio::name ACTIVE_PERM        = "active"_n;
 NTBL("global") global_t {
     name        flon_dao_contract       = RECOVER_ACCOUNT;
     uint64_t    ram_bytes               = 5000;
-    asset       stake_net_quantity      = asset(10000, SYS_SYMB); //TODO: set params in global table
-    asset       stake_cpu_quantity      = asset(40000, SYS_SYMB);
-    EOSLIB_SERIALIZE( global_t, (flon_dao_contract)(ram_bytes)(stake_net_quantity)(stake_cpu_quantity))
+    asset       gas_quant               = asset(300000, SYS_SYMB);
+    EOSLIB_SERIALIZE( global_t, (flon_dao_contract)(ram_bytes)(gas_quant))
 };
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
 

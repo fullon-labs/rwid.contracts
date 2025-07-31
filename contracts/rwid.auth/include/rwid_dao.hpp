@@ -31,7 +31,7 @@ class rwid_dao {
 
             [[eosio::action]] 
             ACTION setscore( const name& auth_contract, const name& account, const uint64_t& order_id, const uint8_t& score);
-            ACTION delauth(const name& auth_contract, const name& account );
+            ACTION delregauth(const name& auth_contract, const name& account );
             [[eosio::action]] 
             ACTION createorder(
                      const uint64_t&            sn,
@@ -47,7 +47,7 @@ class rwid_dao {
             using checkauth_action        = eosio::action_wrapper<"checkauth"_n,    &rwid_dao::checkauth>;
             using setscore_action         = eosio::action_wrapper<"setscore"_n,     &rwid_dao::setscore>;
             using createcorder_action     = eosio::action_wrapper<"createorder"_n,  &rwid_dao::createorder>;
-            using delauth_action     = eosio::action_wrapper<"delauth"_n,  &rwid_dao::delauth>;
+            using delregauth_action     = eosio::action_wrapper<"delregauth"_n,  &rwid_dao::delregauth>;
             using updatepubkey_action     = eosio::action_wrapper<"updatepubkey"_n,  &rwid_dao::updatepubkey>;
 };
 

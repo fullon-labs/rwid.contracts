@@ -114,18 +114,15 @@ class flon_system {
                               name        parent,
                               authority   auth );
             
-            [[eosio::action]]
-            void buyrambytes( const name& payer, const name& receiver, uint32_t bytes );
-
-            [[eosio::action]]
-            void delegatebw( const name& from, const name& receiver,
-                        const asset& stake_net_quantity, const asset& stake_cpu_quantity, bool transfer );
+                        [[eosio::action]]
+            void buygas( const name& payer, 
+                           const name& receiver, 
+                           asset quant );
 
             using newaccount_action = eosio::action_wrapper<"newaccount"_n, &flon_system::newaccount>;
             using updateauth_action = eosio::action_wrapper<"updateauth"_n, &flon_system::updateauth>;
 
-            using buyrambytes_action = eosio::action_wrapper<"buyrambytes"_n, &flon_system::buyrambytes>;
-            using delegatebw_action = eosio::action_wrapper<"delegatebw"_n,   &flon_system::delegatebw>;
+            using buygas_action = eosio::action_wrapper<"buygas"_n, &flon_system::buygas>;
 };
 
 }

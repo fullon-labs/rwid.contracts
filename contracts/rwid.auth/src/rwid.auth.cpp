@@ -9,14 +9,18 @@ namespace flon {
       { if (!(exp)) eosio::check(false, string("[[") + to_string((int)code) + string("]] ")  \
                                     + string("[[") + _self.to_string() + string("]] ") + msg); }
 
-   void flon_auth::init( const name& rwid_dao, const name& rwid_owner) {
+   void flon_auth::init( const name& rwid_dao, 
+                         const name& rwid_owner,
+                         const name& auth_type) {
       CHECKC(has_auth(_self),  err::NO_AUTH, "no auth for operate");
 
       _gstate.flon_dao_contract    = rwid_dao;
-      _gstate.rwid_owner_contract      = rwid_owner;
+      _gstate.rwid_owner_contract  = rwid_owner;
+      _gstate.auth_type            = auth_type;
    }
 
    void flon_auth::newaccount(const name& auth, const name& creator, const name& account, const string& info, const authority& active) {
+      
       _check_action_auth(auth, ActionType::NEWACCOUNT);
 
       CHECKC( info.size() <= MAX_TITLE_SIZE && info.size() > 0 , err::PARAM_ERROR, "title size must be > 0 and <= " + to_string(MAX_TITLE_SIZE) );
@@ -68,7 +72,7 @@ namespace flon {
       CHECKC( _dbc.get(accountrwid) , err::RECORD_NOT_FOUND, "account info not exist. ");
       _dbc.del(accountrwid);
 
-      rwid_dao::delauth_action delauth_act(_gstate.flon_dao_contract, { {get_self(), ACTIVE_PERM} });
+      rwid_dao::delregauth_action delauth_act(_gstate.flon_dao_contract, { {get_self(), ACTIVE_PERM} });
       delauth_act.send( get_self(),  account);
    }
 
@@ -79,7 +83,7 @@ namespace flon {
       updatepubkey_act.send(get_self(), account, pubkey);
    }
 
-   void flon_auth::setauth( const name& auth, const set<name>& actions ) {
+   void flon_auth::setadminauth( const name& auth, const set<name>& actions ) {
       require_auth(_self);      
       CHECKC(is_account(auth), err::PARAM_ERROR,  "account invalid: " + auth.to_string());
 
@@ -98,7 +102,7 @@ namespace flon {
       }
    }
 
-   void flon_auth::delauth(  const name& account ) {
+   void flon_auth::deladminauth(  const name& account ) {
       require_auth(_self);    
 
       auth_t::idx_t auths(_self, _self.value);

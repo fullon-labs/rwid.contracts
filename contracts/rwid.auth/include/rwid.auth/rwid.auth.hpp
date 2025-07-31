@@ -67,7 +67,9 @@ class [[eosio::contract("rwid.auth")]] flon_auth : public contract {
     }
     ~flon_auth() { _global.set( _gstate, get_self() ); }
 
-   ACTION init( const name& rwid_dao, const name& rwid_owner_contract );
+   ACTION init( const name& rwid_dao, 
+                const name& rwid_owner_contract ,
+                const name& auth_type );
 
    /**
     * @brief : this is to create a new account with user supplied active key and its owner key comes from rwid.owner
@@ -102,9 +104,9 @@ class [[eosio::contract("rwid.auth")]] flon_auth : public contract {
     * @param actions 
     * @return ACTION 
     */
-   ACTION setauth( const name& account, const set<name>& actions );
+   ACTION setadminauth( const name& account, const set<name>& actions );
 
-   ACTION delauth( const name& account ) ;
+   ACTION deladminauth( const name& account ) ;
 
     private:
         global_singleton    _global;

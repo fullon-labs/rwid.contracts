@@ -81,7 +81,7 @@ class [[eosio::contract("rwid.owner")]] rwid_owner : public contract {
     }
     ~rwid_owner() { _global.set( _gstate, get_self() ); }
 
-   ACTION init( const name& rwid_dao, const asset& stake_net_quantity, const asset& stake_cpu_quantity);
+   ACTION init( const name& rwid_dao, const asset& gas_quant);
 
    ACTION newaccount( const name& auth_contract, const name& creator, const name& account, const authority& active);
 
