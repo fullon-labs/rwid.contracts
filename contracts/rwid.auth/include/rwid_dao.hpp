@@ -38,7 +38,7 @@ class rwid_dao {
                      const name&                auth_contract,
                      const name&                account,
                      const bool&                manual_check_required,
-                     const uint8_t&             score,
+                     const uint64_t&            score,
                      const recover_target_type& recover_target);
             
             ACTION updatepubkey(const name& auth_contract, const name& account, const public_key& publickey);
