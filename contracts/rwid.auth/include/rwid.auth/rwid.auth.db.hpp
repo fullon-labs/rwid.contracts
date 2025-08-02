@@ -57,7 +57,7 @@ typedef eosio::singleton< "global"_n, global_t > global_singleton;
 TBL account_rwid_t {
     name                        account;        //PK
     string                      rwid_info;    //value: md5(md5(RM + salt)
-    time_point_sec              created_at;
+    time_point                  created_at;
 
     account_rwid_t() {}
     account_rwid_t(const name& i): account(i) {}

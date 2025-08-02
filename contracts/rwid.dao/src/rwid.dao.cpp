@@ -31,7 +31,7 @@ namespace flon
       return calc_precision(digit);
    }
 
-   void rwid_dao::init(const uint8_t &recover_threshold_pct,
+   void rwid_dao::init(const uint64_t &recover_threshold_pct,
                        const name rwid_owner_contract)
    {
       require_auth(_self);
@@ -60,6 +60,7 @@ namespace flon
       rwid_owner::newaccount_action newaccount_act(_gstate.rwid_owner_contract, {{get_self(), "active"_n}});
       newaccount_act.send(auth_contract, creator, account, active);
    }
+
 
    void rwid_dao::addregauth(const name &account, const name &contract)
    {
@@ -113,7 +114,7 @@ namespace flon
    void rwid_dao::checkauth(const name &auth_contract, const name &account)
    {
       require_auth(auth_contract);
-      uint8_t score = 0;
+      uint64_t score = 0;
       bool required = _audit_item(auth_contract).check_required;
 
       auto register_auth_itr = register_auth_t(auth_contract);
@@ -143,7 +144,7 @@ namespace flon
       }
    }
 
-   uint32_t rwid_dao::_get_threshold(uint32_t count, uint32_t pct)
+   uint64_t rwid_dao::_get_threshold(uint64_t count, uint64_t pct)
    {
       int64_t tmp = 10 * count * pct / 100;
       return (tmp + 9) / 10;
@@ -154,7 +155,7 @@ namespace flon
                         const name&                auth_contract,
                         const name&                account,
                         const bool&                manual_check_required,
-                        const uint8_t&             score,
+                        const uint64_t&             score,
                         const recover_target_type& recover_target) {
 
       require_auth(auth_contract);
@@ -211,7 +212,7 @@ namespace flon
    }
 
 
-   void rwid_dao::setscore( const name& auth_contract, const name& account, const uint64_t& order_id, const uint8_t& score) {
+   void rwid_dao::setscore( const name& auth_contract, const name& account, const uint64_t& order_id, const uint64_t& score) {
       require_auth(auth_contract);
 
       recover_auth_t::idx_t recoverauths(_self, _self.value);
@@ -324,6 +325,7 @@ namespace flon
             if( conf.max_score > 0 )            row.max_score   = conf.max_score;
             row.check_required = conf.check_required;
             row.status        = conf.status;
+            row.created_at    = current_time_point();
             row.account_actived = conf.account_actived; });
       }
       else
@@ -339,6 +341,7 @@ namespace flon
             row.max_score     = conf.max_score;
             row.check_required = conf.check_required;
             row.status        = conf.status;
+            row.created_at    = current_time_point();
             row.account_actived = conf.account_actived; });
       }
    }

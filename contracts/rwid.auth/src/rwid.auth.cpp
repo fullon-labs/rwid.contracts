@@ -83,6 +83,33 @@ namespace flon {
       updatepubkey_act.send(get_self(), account, pubkey);
    }
 
+   void flon_auth::createorder(  
+                        const uint64_t&            sn,
+                        const name&                auth,
+                        const name&                account,
+                        const bool&                manual_check_required,
+                        const uint64_t&             score,
+                        const recover_target_type& recover_target) {
+      _check_action_auth(auth, ActionType::CREATECORDER);
+      rwid_dao::createcorder_action createcorder_act(_gstate.flon_dao_contract, { {get_self(), ACTIVE_PERM} });
+      createcorder_act.send( sn, get_self(), account, manual_check_required, score, recover_target);
+   }
+
+   void flon_auth::setscore(const name& auth,
+                                 const name& account,
+                                 const uint64_t& order_id,
+                                 const uint64_t& score ) {
+
+      _check_action_auth(auth, ActionType::SETSCORE);
+      rwid_dao::setscore_action setscore_act(_gstate.flon_dao_contract, { {get_self(), ACTIVE_PERM} });
+      setscore_act.send(get_self(), account, order_id, score);
+   }
+
+
+
+
+
+
    void flon_auth::setadminauth( const name& auth, const set<name>& actions ) {
       require_auth(_self);      
       CHECKC(is_account(auth), err::PARAM_ERROR,  "account invalid: " + auth.to_string());

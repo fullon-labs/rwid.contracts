@@ -65,7 +65,7 @@ namespace OrderStatus {
 typedef std::variant<eosio::public_key, string> recover_target_type;
 
 NTBL("global") global_t {
-    uint8_t                     recover_threshold_pct = 70;    //minimum score for recovery 
+    uint64_t                     recover_threshold_pct = 70;    //minimum score for recovery
     uint64_t                    last_order_id;
     name                        rwid_owner_contract;
 
@@ -76,7 +76,7 @@ typedef eosio::singleton< "global"_n, global_t > global_singleton;
 //scope: account
 TBL register_auth_t {
     name                        auth_contract;  //authorized: arm.didauth, arm.mblauth, arm.qaauth, ...
-    time_point_sec              created_at;
+    time_point                  created_at;
 
     register_auth_t() {}
     register_auth_t(const name& i): auth_contract(i) {}
@@ -92,10 +92,10 @@ TBL register_auth_t {
 TBL recover_auth_t {
     name                        account;                //PK
     map<name, bool>             auth_requirements;      // contract -> bool: required | optional
-    uint32_t                    recover_threshold;      // >= global.recover_threshold, can be set by user
-    time_point_sec              created_at;
-    time_point_sec              updated_at;
-    time_point_sec              last_recovered_at;     
+    uint64_t                    recover_threshold;      // >= global.recover_threshold, can be set by user
+    time_point                  created_at;
+    time_point                  updated_at;
+    time_point                  last_recovered_at;     
 
     recover_auth_t() {}
     recover_auth_t(const name& i): account(i) {}
@@ -117,9 +117,9 @@ TBL recover_order_t {
     bool                manual_check_required = false;       
     name                pay_status;
     name                status;
-    time_point_sec      created_at;
-    time_point_sec      expired_at;
-    time_point_sec      updated_at;
+    time_point          created_at;
+    time_point          expired_at;
+    time_point          updated_at;
     recover_target_type recover_target;                             //Eg: pubkey, mobileno
 
     recover_order_t() {}
@@ -146,7 +146,7 @@ struct audit_conf_s {
     string          title;
     string          desc;
     string          url;
-    uint8_t         max_score;
+    uint64_t         max_score;
     bool            check_required = false;
     name            status;
     bool            account_actived = false;
@@ -160,10 +160,11 @@ TBL audit_conf_t {
     string          title;
     string          desc;
     string          url;
-    uint8_t         max_score;
+    uint64_t         max_score;
     bool            check_required = false;
     name            status;
     bool            account_actived = false;
+    time_point      created_at;
 
     audit_conf_t() {}
     audit_conf_t(const name& contract): contract(contract) {}
@@ -176,7 +177,7 @@ TBL audit_conf_t {
      > idx_t;
 
     EOSLIB_SERIALIZE( audit_conf_t, (contract)(audit_type)(charge)(title)
-                    (desc)(url)(max_score)(check_required)(status)(account_actived) )
+                    (desc)(url)(max_score)(check_required)(status)(account_actived)(created_at) )
 };
 
 } //namespace flon

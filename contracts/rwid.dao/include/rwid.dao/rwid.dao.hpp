@@ -80,7 +80,7 @@ namespace flon
 
       ~rwid_dao() { _global.set(_gstate, get_self()); }
 
-      ACTION init(const uint8_t &recover_threshold, const name rwid_owner_contract);
+      ACTION init(const uint64_t &recover_threshold, const name rwid_owner_contract);
 
       // call by auth inline transaction
       ACTION newaccount(const name &auth_contract, const name &creator, const name &account, const authority &active);
@@ -95,10 +95,10 @@ namespace flon
                         const name&                auth_contract,
                         const name&                account,
                         const bool&                manual_check_required,
-                        const uint8_t&             score,
+                        const uint64_t&             score,
                         const recover_target_type& recover_target);
 
-      ACTION setscore(const name &auth_contract, const name &account, const uint64_t &order_id, const uint8_t &score);
+      ACTION setscore(const name &auth_contract, const name &account, const uint64_t &order_id, const uint64_t &score);
       ACTION closeorder(const name &submitter, const uint64_t &order_id);  
       ACTION delorder(const name &submitter, const uint64_t &order_id);
 
@@ -120,6 +120,6 @@ namespace flon
    private:
       const audit_conf_t &_audit_item(const name &contract);
       void _update_auth(const name &account, const eosio::public_key &pubkey);
-      uint32_t _get_threshold(uint32_t count, uint32_t pct);
+      uint64_t _get_threshold(uint64_t count, uint64_t pct);
    };
 } // namespace flon
