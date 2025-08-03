@@ -7,7 +7,7 @@
 #include <utils.hpp>
 
 static constexpr eosio::name active_permission{"active"_n};
-static constexpr symbol   APL_SYMBOL          = symbol(symbol_code("APL"), 4);
+// static constexpr symbol   APL_SYMBOL          = symbol(symbol_code("APL"), 4);
 static constexpr eosio::name MT_BANK{"flon.token"_n};
 
 #define ALLOT_APPLE(farm_contract, lease_id, to, quantity, memo) \
