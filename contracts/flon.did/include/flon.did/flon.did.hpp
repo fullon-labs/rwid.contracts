@@ -129,7 +129,7 @@ class [[eosio::contract("flon.did")]] flon_did : public contract {
 
    private:
 
-      void _reward_farmer( const asset& fee, const name& farmer );
+      // void _reward_farmer( const asset& fee, const name& farmer );
 
       void _on_audit_log(
                      const uint64_t& order_id,

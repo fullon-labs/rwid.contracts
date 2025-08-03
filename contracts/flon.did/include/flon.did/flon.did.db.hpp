@@ -30,10 +30,10 @@ namespace OrderStatus {
     static constexpr eosio::name NOK{"nok"_n };
     static constexpr eosio::name PENDING{"pending"_n };
 }
-struct aplink_farm {
-    name contract           = "aplink.farm"_n;
-    uint64_t lease_id       = 5;    //nftone-farm-land
-};
+// struct aplink_farm {
+//     name contract           = "aplink.farm"_n;
+//     uint64_t lease_id       = 5;    //nftone-farm-land
+// };
 
 NTBL("global") global_t {
     name                        admin;
