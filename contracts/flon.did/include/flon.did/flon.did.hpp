@@ -89,7 +89,7 @@ class [[eosio::contract("flon.did")]] flon_did : public contract {
       _gstate.admin = admin;
    }
    
-   ACTION init( const name& admin, const name& nft_contract, const name& fee_colletor, const uint64_t& lease_id);
+   ACTION init( const name& admin, const name& nft_contract, const name& fee_colletor );
 
    ACTION setdidstatus (const uint64_t& order_id, const name& status, const string& msg );
 

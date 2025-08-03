@@ -11,7 +11,7 @@ icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
 
 RAM will be refunded to the RAM payer of the {{symbol_to_symbol_code symbol}} token balance for {{owner}}.
 
-<h1 class="contract">create</h1>
+<h1 class="contract">init</h1>
 
 ---
 spec_version: "0.2.0"
@@ -28,7 +28,7 @@ This action will not result any any tokens being issued into circulation.
 
 RAM will deducted from {{$action.account}}’s resources to create the necessary records.
 
-<h1 class="contract">issue</h1>
+<h1 class="contract">setdidstatus</h1>
 
 ---
 spec_version: "0.2.0"
@@ -47,7 +47,7 @@ If {{to}} does not have a balance for {{asset_to_symbol_code quantity}}, or the 
 
 This action does not allow the total quantity to exceed the max allowed supply of the token.
 
-<h1 class="contract">open</h1>
+<h1 class="contract">addvendor</h1>
 
 ---
 spec_version: "0.2.0"
@@ -60,7 +60,7 @@ icon: @ICON_BASE_URL@/@TOKEN_ICON_URI@
 
 If {{owner}} does not have a balance for {{symbol_to_symbol_code symbol}}, {{ram_payer}} will be designated as the RAM payer of the {{symbol_to_symbol_code symbol}} token balance for {{owner}}. As a result, RAM will be deducted from {{ram_payer}}’s resources to create the necessary records.
 
-<h1 class="contract">retire</h1>
+<h1 class="contract">addvendor</h1>
 
 ---
 spec_version: "0.2.0"
@@ -75,7 +75,7 @@ The token manager agrees to remove {{quantity}} from circulation, taken from the
 {{memo}}
 {{/if}}
 
-<h1 class="contract">transfer</h1>
+<h1 class="contract">auditlog</h1>
 
 ---
 spec_version: "0.2.0"
