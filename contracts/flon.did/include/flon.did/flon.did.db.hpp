@@ -30,20 +30,19 @@ namespace OrderStatus {
     static constexpr eosio::name NOK{"nok"_n };
     static constexpr eosio::name PENDING{"pending"_n };
 }
-struct aplink_farm {
-    name contract           = "aplink.farm"_n;
-    uint64_t lease_id       = 5;    //nftone-farm-land
-};
+// struct aplink_farm {
+//     name contract           = "aplink.farm"_n;
+//     uint64_t lease_id       = 5;    //nftone-farm-land
+// };
 
 NTBL("global") global_t {
     name                        admin;
     name                        nft_contract;
     name                        fee_collector;
-    aplink_farm                 apl_farm;
     uint64_t                    last_order_idx = 0;
     uint64_t                    last_vendor_id = 0;
 
-    EOSLIB_SERIALIZE( global_t, (admin)(nft_contract)(fee_collector)(apl_farm)(last_order_idx)(last_vendor_id) )
+    EOSLIB_SERIALIZE( global_t, (admin)(nft_contract)(fee_collector)(last_order_idx)(last_vendor_id) )
 };
 typedef eosio::singleton< "global"_n, global_t > global_singleton;
 

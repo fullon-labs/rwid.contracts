@@ -1,18 +1,18 @@
 #include <flon.did/flon.did.hpp>
 #include <did.ntoken/did.ntoken.hpp>
-#include <aplink.farm/aplink.farm.hpp>
+// #include <aplink.farm/aplink.farm.hpp>
 
 #include<math.hpp>
 
 #include <utils.hpp>
 
 static constexpr eosio::name active_permission{"active"_n};
-static constexpr symbol   APL_SYMBOL          = symbol(symbol_code("APL"), 4);
+// static constexpr symbol   APL_SYMBOL          = symbol(symbol_code("APL"), 4);
 static constexpr eosio::name MT_BANK{"flon.token"_n};
 
-#define ALLOT_APPLE(farm_contract, lease_id, to, quantity, memo) \
-    {   aplink::farm::allot_action(farm_contract, { {_self, active_perm} }).send( \
-            lease_id, to, quantity, memo );}
+// #define ALLOT_APPLE(farm_contract, lease_id, to, quantity, memo) \
+//     {   aplink::farm::allot_action(farm_contract, { {_self, active_perm} }).send( \
+//             lease_id, to, quantity, memo );}
 
 namespace flon {
 
@@ -28,7 +28,7 @@ using namespace std;
       return calc_precision(digit);
    }
 
-   void flon_did::init( const name& admin, const name& nft_contract, const name& fee_collector, const uint64_t& lease_id) {
+   void flon_did::init( const name& admin, const name& nft_contract, const name& fee_collector ) {
       require_auth( _self );
 
       CHECKC( is_account( admin ), err::PARAM_ERROR, "admin account does not exist");
@@ -37,8 +37,6 @@ using namespace std;
       _gstate.nft_contract       = nft_contract;
       _gstate.admin              = admin;
       _gstate.fee_collector      = fee_collector;
-      _gstate.apl_farm.lease_id  = lease_id;
-
    }
 
     void flon_did::ontransfer(const name& from, const name& to, const asset& quant, const string& memo) {
@@ -99,8 +97,8 @@ using namespace std;
             auto did_quantity = nasset(1, vendor_info_ptr->nft_id);
             auto quants = { did_quantity };
             TRANSFER_D( _gstate.nft_contract, order_ptr->applicant, quants, "send did: " + to_string(order_id) );
-            if( vendor_info_ptr->user_reward_quant.amount > 0  )
-               _reward_farmer(vendor_info_ptr->user_reward_quant, order_ptr->applicant);
+            // if( vendor_info_ptr->user_reward_quant.amount > 0  )
+            //    _reward_farmer(vendor_info_ptr->user_reward_quant, order_ptr->applicant);
 
             break;
          }
@@ -211,13 +209,13 @@ using namespace std;
 
    }
 
-   void flon_did::_reward_farmer( const asset& reward_quant, const name& farmer ) {
-      auto apples = asset(0, APLINK_SYMBOL);
-      aplink::farm::available_apples( _gstate.apl_farm.contract, _gstate.apl_farm.lease_id, apples );
-      if (apples.amount == 0) return;
+   // void flon_did::_reward_farmer( const asset& reward_quant, const name& farmer ) {
+   //    auto apples = asset(0, APLINK_SYMBOL);
+   //    aplink::farm::available_apples( _gstate.apl_farm.contract, _gstate.apl_farm.lease_id, apples );
+   //    if (apples.amount == 0) return;
 
-      ALLOT_APPLE( _gstate.apl_farm.contract, _gstate.apl_farm.lease_id, farmer, reward_quant, "DID reward" )
-   }
+   //    ALLOT_APPLE( _gstate.apl_farm.contract, _gstate.apl_farm.lease_id, farmer, reward_quant, "DID reward" )
+   // }
 
    void flon_did::auditlog( 
                      const uint64_t& order_id,
