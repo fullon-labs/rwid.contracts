@@ -149,7 +149,7 @@ namespace flon
       int64_t tmp = 10 * count * pct / 100;
       return (tmp + 9) / 10;
    }
-
+   // -1 是必须要做的，0 是可做的，1 是已经做了的
    void rwid_dao::createorder(
                         const uint64_t&            sn,
                         const name&                auth_contract,
@@ -204,8 +204,9 @@ namespace flon
          row.recover_type           = UpdateActionType::PUBKEY;
          row.recover_target         = recover_target;
          row.pay_status             = PayStatus::NOPAY;
-         row.created_at             = now;
+         row.created_at             = current_time_point();
          row.expired_at             = now + eosio::seconds(duration_second);
+         row.updated_at             = current_time_point();
          row.status                 = OrderStatus::PENDING;
       });
    
@@ -235,36 +236,52 @@ namespace flon
       });
    }
 
-   void rwid_dao::closeorder( const name& submitter, const uint64_t& order_id) {
-      CHECKC( has_auth(submitter) , err::NO_AUTH, "rwid_dao no auth for operate" )
+   void rwid_dao::closeorder(const name& submitter, const uint64_t& order_id) {
+      // 权限校验：必须是提交者本人调用
+      CHECKC(has_auth(submitter), err::NO_AUTH, "rwid_dao no auth for operate");
 
+      // 获取 order 记录
       recover_order_t::idx_t orders(_self, _self.value);
-      auto order_ptr     = orders.find(order_id);
-      CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. "); 
-      CHECKC(order_ptr->expired_at > current_time_point(), err::TIME_EXPIRED, "order already time expired")
+      auto order_ptr = orders.find(order_id);
+      CHECKC(order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found.");
 
+      // 校验订单是否过期（当前时间不能晚于 expired_at）
+      CHECKC(order_ptr->expired_at > current_time_point(), err::TIME_EXPIRED, "order already time expired");
+
+      // 获取手动审计类型的配置
       audit_conf_t::idx_t auditscores(_self, _self.value);
       auto auditscore_idx = auditscores.get_index<"audittype"_n>();
-      auto auditscore_itr =  auditscore_idx.find(rwidCheckType::MANUAL.value);
+      auto auditscore_itr = auditscore_idx.find(rwidCheckType::MANUAL.value);  // 目前只支持 MANUAL 类型
 
+      // 计算总评分（排除掉 MANUAL 类型的评分）
       auto total_score = 0;
-      for (auto& [key, value]: order_ptr->scores) {
-         CHECKC(value > 0 , err::NEED_REQUIRED_CHECK, "required check: " + key.to_string())
-         if( auditscore_itr == auditscore_idx.end() || auditscore_itr->contract != key ) {
-            total_score += value; 
+      for (auto& [key, value] : order_ptr->scores) {
+         // 校验所有评分值必须大于 0（不能为待打分或失败）
+         CHECKC(value > 0, err::NEED_REQUIRED_CHECK, "required check: " + key.to_string());
+
+         // 非 MANUAL 的评分才累加到总分中
+         if (auditscore_itr == auditscore_idx.end() || auditscore_itr->contract != key) {
+            total_score += value;
          }
       }
 
+      // 获取 recover_auth 表中对应账户的数据
       recover_auth_t::idx_t recoverauths(_self, _self.value);
-      auto audit_ptr     = recoverauths.find(order_ptr->account.value);
-      CHECKC( audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "recover auth not exist. ");
-      CHECKC( total_score >= audit_ptr->recover_threshold, err::SCORE_NOT_ENOUGH, "score not enough" );
+      auto audit_ptr = recoverauths.find(order_ptr->account.value);
+      CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "recover auth not exist.");
 
-      recoverauths.modify( *audit_ptr, _self, [&]( auto& row ) {
-         row.last_recovered_at  = current_time_point();
+      // 校验评分是否达到恢复阈值
+      CHECKC(total_score >= audit_ptr->recover_threshold, err::SCORE_NOT_ENOUGH, "score not enough");
+
+      // 更新最后一次恢复时间
+      recoverauths.modify(*audit_ptr, _self, [&](auto& row) {
+         row.last_recovered_at = current_time_point();
       });
 
+      // 执行账户权限恢复（更新 owner 的公钥）
       _update_auth(order_ptr->account, std::get<eosio::public_key>(order_ptr->recover_target));
+
+      // 恢复完成，删除该 order
       orders.erase(order_ptr);
    }
 

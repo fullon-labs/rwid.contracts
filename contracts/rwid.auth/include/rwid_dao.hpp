@@ -30,7 +30,7 @@ class rwid_dao {
             ACTION checkauth( const name& auth_contract, const name& account );
 
             [[eosio::action]] 
-            ACTION setscore( const name& auth_contract, const name& account, const uint64_t& order_id, const uint8_t& score);
+            ACTION setscore( const name& auth_contract, const name& account, const uint64_t& order_id, const uint64_t& score);
             ACTION delregauth(const name& auth_contract, const name& account );
             [[eosio::action]] 
             ACTION createorder(

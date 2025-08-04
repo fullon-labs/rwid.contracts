@@ -39,7 +39,7 @@ mcli set account permission $authtg active --add-code
 
 
 
-# rwid.owner  合约初始化.
+# rwid.owner  合约初始化
 mpush $con init '["'"${dao}"'", "1.00000000 FLON"]' -p $con
 creator=flonian  # 创建者账号
 acc=aliceaaa1112   # 目标新账号
@@ -65,6 +65,7 @@ newpubkey=FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk
 
 
 # rwid.auth 合约初始化
+
 mpush $auth init '["'"$dao"'", "'"$con"'","mobileno"]' -p $auth
 
 mpush $auth setadminauth \
@@ -82,7 +83,7 @@ mpush $dao addauditconf \
   "desc":"实名审计",
   "url":"https://yourdomain/kyc",
   "max_score":100,
-  "check_required":true,
+  "check_required":false,
   "status":"running",
   "account_actived":true
 }]' \
@@ -100,6 +101,9 @@ mpush $dao addauditconf \
   "account_actived":true
 }]' \
 -p $dao
+
+
+
 
 
 
@@ -125,7 +129,7 @@ mpush $dao createorder '[202508011001,"'"${auth}"'","aliceaaa1115",true,1,["stri
 
 
 
-new_acc=aliceaaa1123
+new_acc=aliceaaa1211
 
 
 mpush $auth newaccount \
@@ -141,7 +145,6 @@ mpush $auth updateinfo \
 
 
 
-mpush $dao addregauth '["'"$new_acc"'", "'"$auth"'"]' -p $new_acc  
 mpush $dao addregauth '["'"$new_acc"'", "'"$authemail"'"]' -p $new_acc  
 mpush $dao addregauth '["'"$new_acc"'", "'"$authtg"'"]' -p $new_acc  
 
@@ -150,19 +153,31 @@ mpush $dao checkauth '["'"$authemail"'", "'"$new_acc"'"]' -p $authemail
 mpush $dao checkauth '["'"$auth"'", "'"$new_acc"'"]' -p $auth
 mpush $dao checkauth '["'"$authtg"'", "'"$new_acc"'"]' -p $authtg
 
-mpush $auth createorder '[202508011001,"'"${auth}"'","aliceaaa1123",true,1,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
+mpush $auth createorder '[202508011001,"'"${auth}"'","aliceaaa1123",false,1,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
  -p $auth
 
-mpush -djs $auth createorder '[202508011001,"'"${auth}"'","aliceaaa1123",true,1,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]' -p $auth
-
-
-
-mpush $auth createorder '[202508011001,"'"${auth}"'","aliceaaa1123",true,1,["0", {"type": 0, "data": "023a6857801304439c0b729686a629206aad622e57fc5a68309c15169fc7fdc37b"}] ]'\
- -p $auth
-
-mpush $auth createorder '[202508011001,"'"${auth}"'","aliceaaa1123",true,1,[0000, "023a6857801304439c0b729686a629206aad622e57fc5a68309c15169fc7fdc37b"] ]'\
+mpush $auth createorder '[202508011035,"'"${auth}"'","aliceaaa1211",false,80,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
  -p $auth
 
 
  mpush $dao delregauth  '["'"$authemail"'", "'"$new_acc"'"]' -p $authemail
  mpush $dao delregauth  '["'"$auth"'", "'"$new_acc"'"]' -p $auth
+
+
+
+
+#删除订单
+ mpush $dao  delorder '["aliceaaa1153", 14]' -p aliceaaa1153
+
+
+
+
+
+
+ mpush $dao setscore '["'"${auth}"'", "aliceaaa1153", 14, 1]' -p $auth
+
+
+
+
+ #删除配置项
+ mpush $dao delauditconf '["'"${auth}"'"]' -p $dao

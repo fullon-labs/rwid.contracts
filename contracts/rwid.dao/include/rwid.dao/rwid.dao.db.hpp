@@ -146,7 +146,7 @@ struct audit_conf_s {
     string          title;
     string          desc;
     string          url;
-    uint64_t         max_score;
+    uint64_t        max_score;
     bool            check_required = false;
     name            status;
     bool            account_actived = false;
@@ -160,7 +160,7 @@ TBL audit_conf_t {
     string          title;
     string          desc;
     string          url;
-    uint64_t         max_score;
+    uint64_t        max_score;
     bool            check_required = false;
     name            status;
     bool            account_actived = false;
