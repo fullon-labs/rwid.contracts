@@ -2,27 +2,27 @@
 shopt -s expand_aliases
 source ~/.bashrc
 
-con= 
+con= *****
 mreg flon $con flonian
 mtran flon $con "500 FLON"
 mset $con rwid.owner
 mcli set account permission $con active --add-code
 
 
-dao= 
+dao= *****
 mreg flon $dao flonian
 mtran flon $dao "500 FLON"
 mset $dao rwid.dao
 mcli set account permission $dao active --add-code
 
-auth= 
+auth= *****
 mreg flon $auth flonian
 mtran flon $auth "500 FLON"
 mset $auth rwid.auth
 mcli set account permission $auth active --add-code
 
 
-authemail= 
+authemail= *****
 mreg flon $authemail flonian
 mtran flon $authemail "500 FLON"
 mset $authemail rwid.auth
@@ -43,7 +43,7 @@ mpush $auth setadminauth \
 -p $auth
 
 mpush $dao init '[75, "'"$con"'"]' -p $dao
-
+#也需要配置
 mpush $dao addauditconf \
 '["'"${auth}"'", "mobileno", {
   "charge":"0.00000000 FLON",
