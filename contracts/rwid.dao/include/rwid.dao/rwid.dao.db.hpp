@@ -46,8 +46,6 @@ namespace rwidCheckType {
     static constexpr eosio::name FACEBOOK    { "fb"_n           };
     static constexpr eosio::name WHATSAPP    { "wa"_n           };
     static constexpr eosio::name MAIL        { "mail"_n         };
-    static constexpr eosio::name REQUIRE     { "require"_n         };
-    
 }
 namespace ContractStatus {
     static constexpr eosio::name RUNNING     { "running"_n };

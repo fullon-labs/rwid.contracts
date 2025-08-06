@@ -60,7 +60,7 @@ mpush $con_dao addauditconf \
 -p $con_dao
 
 mpush $con_dao addauditconf \
-'["'"${authemail}"'", "mail", {
+'["'"${con_emailauth}"'", "mail", {
   "charge":"0.00000000 FLON",
   "title":"Email verification",
   "desc":"Email verification for account ownership",
