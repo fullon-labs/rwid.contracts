@@ -2,29 +2,31 @@
 shopt -s expand_aliases
 source ~/.bashrc
 
-con= *****
+# mreg flon rwid flonian
+
+con=rwid.owner
 mreg flon $con flonian
-mtran flon $con "500 FLON"
+mtran flonian $con "100 FLON"
 mset $con rwid.owner
 mcli set account permission $con active --add-code
 
 
-dao= *****
+dao=rwid.dao
 mreg flon $dao flonian
-mtran flon $dao "500 FLON"
+mtran flonian $dao "100 FLON"
 mset $dao rwid.dao
 mcli set account permission $dao active --add-code
 
-auth= *****
+auth=mobile.rwid
 mreg flon $auth flonian
-mtran flon $auth "500 FLON"
+mtran flonian $auth "100 FLON"
 mset $auth rwid.auth
 mcli set account permission $auth active --add-code
 
 
-authemail= *****
+authemail=email.rwid
 mreg flon $authemail flonian
-mtran flon $authemail "500 FLON"
+mtran flonian $authemail "100 FLON"
 mset $authemail rwid.auth
 mcli set account permission $authemail active --add-code
 
