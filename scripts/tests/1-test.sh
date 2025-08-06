@@ -68,9 +68,12 @@ newpubkey=FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk
 
 mpush $con_mobileauth init '["'"$con_dao"'", "'"$con_owner"'","mobileno"]' -p $con_mobileauth
 
+
+rwid_admin=rwid.admin
 mpush $con_mobileauth setadminauth \
-'["'"$con_mobileauth"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
+'["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
 -p $con_mobileauth
+
 
 
 # rwid.dao 合约初始化
@@ -129,7 +132,7 @@ mpush $con_dao createorder '[202508011001,"'"${con_mobileauth}"'","aliceaaa1115"
 
 
 
-new_acc=aliceaaa1214
+new_acc=aliceaaa1223
 
 
 mpush $con_mobileauth newaccount \

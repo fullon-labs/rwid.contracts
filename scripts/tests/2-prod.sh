@@ -38,7 +38,11 @@ mcli set account permission $con_emailauth active --add-code
 mpush $con_owner init '["'"${con_dao}"'", "0.10000000 FLON"]' -p $con # set gas as 0.1 FLON
 
 
-mpush $con_mobileauth init '["'"$con_dao"'", "'"$con_owner"'","mobileno"]' -p $con_mobileauth
+rwid_admin=rwid.admin
+mpush $con_mobileauth setadminauth \
+'["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
+-p $con_mobileauth
+
 
 mpush $con_mobileauth setadminauth \
 '["'"$con_mobileauth"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
