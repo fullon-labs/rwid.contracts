@@ -54,8 +54,8 @@ mpush $con_dao addauditconf \
   "url":"",
   "max_score":100,
   "check_required":true,
-  "status":"running",
-  "primary":true
+  "primary":true,
+  "status":"running"
 }]' \
 -p $con_dao
 
@@ -67,8 +67,8 @@ mpush $con_dao addauditconf \
   "url":"",
   "max_score":100,
   "check_required":true,
-  "status":"running",
-  "primary":true
+  "primary":true,
+  "status":"running"
 }]' \
 -p $dao
 
