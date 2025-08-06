@@ -85,7 +85,7 @@ mpush $dao addauditconf \
   "max_score":100,
   "check_required":false,
   "status":"running",
-  "account_actived":true
+  "primary":true
 }]' \
 -p $dao
 
@@ -98,7 +98,7 @@ mpush $dao addauditconf \
   "max_score":100,
   "check_required":true,
   "status":"running",
-  "account_actived":true
+  "primary":true
 }]' \
 -p $dao
 
@@ -117,7 +117,7 @@ mpush $dao addauditconf \
   "max_score":100,
   "check_required":true,
   "status":"running",
-  "account_actived":true
+  "primary":true
 }]' \
 -p $dao
 

@@ -4,71 +4,71 @@ source ~/.bashrc
 
 # mreg flon rwid flonian
 
-con=rwid.owner
-mreg flon $con flonian
-mtran flonian $con "100 FLON"
-mset $con rwid.owner
-mcli set account permission $con active --add-code
+con_owner=rwid.owner
+mreg flon $con_owner flonian
+mtran flonian $con_owner "100 FLON"
+mset $con_owner rwid.owner
+mcli set account permission $con_owner active --add-code
 
 
-dao=rwid.dao
-mreg flon $dao flonian
-mtran flonian $dao "100 FLON"
-mset $dao rwid.dao
-mcli set account permission $dao active --add-code
+con_dao=rwid.dao
+mreg flon $con_dao flonian
+mtran flonian $con_dao "100 FLON"
+mset $con_dao rwid.dao
+mcli set account permission $con_dao active --add-code
 
-auth=mobile.rwid
-mreg flon $auth flonian
-mtran flonian $auth "100 FLON"
-mset $auth rwid.auth
-mcli set account permission $auth active --add-code
+con_mobileauth=mobile.rwid
+mreg flon $con_mobileauth flonian
+mtran flonian $con_mobileauth "100 FLON"
+mset $con_mobileauth rwid.auth
+mcli set account permission $con_mobileauth active --add-code
 
 
-authemail=email.rwid
-mreg flon $authemail flonian
-mtran flonian $authemail "100 FLON"
-mset $authemail rwid.auth
-mcli set account permission $authemail active --add-code
+con_emailauth=email.rwid
+mreg flon $con_emailauth flonian
+mtran flonian $con_emailauth "100 FLON"
+mset $con_emailauth rwid.auth
+mcli set account permission $con_emailauth active --add-code
 
 
 
 
 
 # 合约初始化
-mpush $con init '["'"${dao}"'", "1.00000000 FLON"]' -p $con
+mpush $con_owner init '["'"${con_dao}"'", "0.10000000 FLON"]' -p $con # set gas as 0.1 FLON
 
 
-mpush $auth init '["'"$dao"'", "'"$con"'","mobileno"]' -p $auth
+mpush $con_mobileauth init '["'"$con_dao"'", "'"$con_owner"'","mobileno"]' -p $con_mobileauth
 
-mpush $auth setadminauth \
-'["'"$auth"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
--p $auth
+mpush $con_mobileauth setadminauth \
+'["'"$con_mobileauth"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
+-p $con_mobileauth
 
-mpush $dao init '[75, "'"$con"'"]' -p $dao
+mpush $con_dao init '[75, "'"$con_owner"'"]' -p $con_dao # 75%
 #也需要配置
-mpush $dao addauditconf \
-'["'"${auth}"'", "mobileno", {
+mpush $con_dao addauditconf \
+'["'"${con_mobileauth}"'", "mobileno", {
   "charge":"0.00000000 FLON",
-  "title":"手机号认证",
-  "desc":"实名审计",
-  "url":"https://yourdomain/kyc",
+  "title":"Mobile phone verification",
+  "desc":"Mobile phone verification for account ownership",
+  "url":"",
   "max_score":100,
   "check_required":true,
   "status":"running",
-  "account_actived":true
+  "primary":true
 }]' \
--p $dao
+-p $con_dao
 
-mpush $dao addauditconf \
+mpush $con_dao addauditconf \
 '["'"${authemail}"'", "mail", {
   "charge":"0.00000000 FLON",
-  "title":"邮箱认证",
-  "desc":"邮箱审计",
-  "url":"https://yourdomain/kyc",
+  "title":"Email verification",
+  "desc":"Email verification for account ownership",
+  "url":"",
   "max_score":100,
   "check_required":true,
   "status":"running",
-  "account_actived":true
+  "primary":true
 }]' \
 -p $dao
 

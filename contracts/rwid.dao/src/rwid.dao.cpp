@@ -47,7 +47,7 @@ namespace flon
       auto now = current_time_point();
 
       auto auditconf = _audit_item(auth_contract);
-      CHECKC(auditconf.account_actived, err::NO_AUTH, "No permission to create account :" + auth_contract.to_string());
+      CHECKC(auditconf.primary, err::NO_AUTH, "No permission to create account :" + auth_contract.to_string());
 
       // bool required = _audit_item(auth_contract);
       recoverauth.account = account;
@@ -343,7 +343,7 @@ namespace flon
             row.check_required = conf.check_required;
             row.status        = conf.status;
             row.created_at    = current_time_point();
-            row.account_actived = conf.account_actived; });
+            row.primary = conf.primary; });
       }
       else
       {
@@ -359,7 +359,7 @@ namespace flon
             row.check_required = conf.check_required;
             row.status        = conf.status;
             row.created_at    = current_time_point();
-            row.account_actived = conf.account_actived; });
+            row.primary = conf.primary; });
       }
    }
 

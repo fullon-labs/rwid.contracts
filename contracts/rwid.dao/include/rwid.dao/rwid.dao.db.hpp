@@ -148,8 +148,8 @@ struct audit_conf_s {
     string          url;
     uint64_t        max_score;
     bool            check_required = false;
+    bool            primary = false;        //primary audit conf can be used to create new account
     name            status;
-    bool            account_actived = false;
 };
 
 //Scope: self
@@ -162,8 +162,8 @@ TBL audit_conf_t {
     string          url;
     uint64_t        max_score;
     bool            check_required = false;
+    bool            primary = false;        //primary audit conf can be used to create new account
     name            status;
-    bool            account_actived = false;
     time_point      created_at;
 
     audit_conf_t() {}
@@ -177,7 +177,7 @@ TBL audit_conf_t {
      > idx_t;
 
     EOSLIB_SERIALIZE( audit_conf_t, (contract)(audit_type)(charge)(title)
-                    (desc)(url)(max_score)(check_required)(status)(account_actived)(created_at) )
+                    (desc)(url)(max_score)(check_required)(primary)(status)(created_at) )
 };
 
 } //namespace flon
