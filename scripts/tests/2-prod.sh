@@ -70,5 +70,5 @@ mpush $con_dao addauditconf \
   "primary":true,
   "status":"running"
 }]' \
--p $dao
+-p $con_dao
 

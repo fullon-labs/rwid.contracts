@@ -2,45 +2,45 @@
 shopt -s expand_aliases
 source ~/.bashrc
 
-con=rw.owner2
-mreg flon $con flonian
-mtran flon $con "500 FLON"
-mset $con rwid.owner
-mcli set account permission $con active --add-code
+con_owner=rwid.owner
+mreg flon $con_owner flonian
+mtran flon $con_owner "100 FLON"
+mset $con_owner rwid.owner
+mcli set account permission $con_owner active --add-code
 
 
-dao=rw.dao2
-mreg flon $dao flonian
-mtran flon $dao "500 FLON"
-mset $dao rwid.dao
-mcli set account permission $dao active --add-code
+con_dao=rwid.dao
+mreg flon $con_dao flonian
+mtran flon $con_dao "100 FLON"
+mset $con_dao rwid.dao
+mcli set account permission $con_dao active --add-code
 
-auth=rw.aumobile2
-mreg flon $auth flonian
-mtran flon $auth "500 FLON"
-mset $auth rwid.auth
-mcli set account permission $auth active --add-code
-
-
-authemail=rw.auemail2
-mreg flon $authemail flonian
-mtran flon $authemail "500 FLON"
-mset $authemail rwid.auth
-mcli set account permission $authemail active --add-code
+con_mobileauth=mobile.rwid
+mreg flon $con_mobileauth flonian
+mtran flon $con_mobileauth "100 FLON"
+mset $con_mobileauth rwid.auth
+mcli set account permission $con_mobileauth active --add-code
 
 
-authtg=rw.autg2
-mreg flon $authtg flonian
-mtran flon $authtg "500 FLON"
-mset $authtg rwid.auth
-mcli set account permission $authtg active --add-code
+con_emailauth=email.rwid
+mreg flon $con_emailauth flonian
+mtran flon $con_emailauth "100 FLON"
+mset $con_emailauth rwid.auth
+mcli set account permission $con_emailauth active --add-code
+
+
+con_authtg=tg.rwid
+mreg flon $con_authtg flonian
+mtran flon $con_authtg "100 FLON"
+mset $con_authtg rwid.auth
+mcli set account permission $con_authtg active --add-code
 
 
 
 
 
 # rwid.owner  合约初始化
-mpush $con init '["'"${dao}"'", "1.00000000 FLON"]' -p $con
+mpush $con_owner init '["'"${con_dao}"'", "0.10000000 FLON"]' -p $con_owner
 creator=flonian  # 创建者账号
 acc=aliceaaa1112   # 目标新账号
 🔑 Private Key: 5Kc3XmkgAEpM3mCcy5HY4kzRdgPxMysUA6TodYQN2URBEsgQn9T
@@ -50,9 +50,9 @@ pubkey=FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk
 
 
 # -测试使用
- mpush $con newaccount \
-'["'"$dao"'", "'"$con"'", "'"$acc"'", {"threshold":1,"keys":[{"key":"'"$pubkey"'", "weight":1}],"accounts":[],"waits":[]}]' \
--p $dao -p flonian@active 
+ mpush $con_owner newaccount \
+'["'"$con_dao"'", "'"$con_owner"'", "'"$acc"'", {"threshold":1,"keys":[{"key":"'"$pubkey"'", "weight":1}],"accounts":[],"waits":[]}]' \
+-p $con_dao -p flonian@active 
 
 
 newpubkey=FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk
@@ -66,41 +66,41 @@ newpubkey=FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk
 
 # rwid.auth 合约初始化
 
-mpush $auth init '["'"$dao"'", "'"$con"'","mobileno"]' -p $auth
+mpush $con_mobileauth init '["'"$con_dao"'", "'"$con_owner"'","mobileno"]' -p $con_mobileauth
 
-mpush $auth setadminauth \
-'["'"$auth"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
--p $auth
+mpush $con_mobileauth setadminauth \
+'["'"$con_mobileauth"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
+-p $con_mobileauth
 
 
 # rwid.dao 合约初始化
-mpush $dao init '[75, "'"$con"'"]' -p $dao
+mpush $con_dao init '[75, "'"$con_owner"'"]' -p $con_dao
 
-mpush $dao addauditconf \
-'["'"${auth}"'", "mobileno", {
+mpush $con_dao addauditconf \
+'["'"${con_mobileauth}"'", "mobileno", {
   "charge":"0.00000000 FLON",
-  "title":"手机号认证",
-  "desc":"实名审计",
-  "url":"https://yourdomain/kyc",
-  "max_score":100,
-  "check_required":false,
-  "status":"running",
-  "primary":true
-}]' \
--p $dao
-
-mpush $dao addauditconf \
-'["'"${authemail}"'", "mail", {
-  "charge":"0.00000000 FLON",
-  "title":"邮箱认证",
-  "desc":"邮箱审计",
-  "url":"https://yourdomain/kyc",
+  "title":"Mobile phone verification",
+  "desc":"Mobile phone verification for account ownership",
+  "url":"",
   "max_score":100,
   "check_required":true,
-  "status":"running",
-  "primary":true
+  "primary":true,
+  "status":"running"
 }]' \
--p $dao
+-p $con_dao
+
+mpush $con_dao addauditconf \
+'["'"${con_emailauth}"'", "mail", {
+  "charge":"0.00000000 FLON",
+  "title":"Email verification",
+  "desc":"Email verification for account ownership",
+  "url":"",
+  "max_score":100,
+  "check_required":true,
+  "primary":true,
+  "status":"running"
+}]' \
+-p $con_dao
 
 
 
@@ -108,8 +108,8 @@ mpush $dao addauditconf \
 
 
 
-mpush $dao addauditconf \
-'["'"${authtg}"'", "mail", {
+mpush $con_dao addauditconf \
+'["'"${con_authtg}"'", "mail", {
   "charge":"0.00000000 FLON",
   "title":"tg",
   "desc":"tg",
@@ -117,67 +117,67 @@ mpush $dao addauditconf \
   "max_score":100,
   "check_required":true,
   "status":"running",
-  "primary":true
+  "primary":true 
 }]' \
--p $dao
+-p $con_dao
 
 
-mpush $dao createorder '[202508011001,"'"${auth}"'","aliceaaa1115",true,1,["string", "13800138000"] ]'\
- -p $auth -p $dao
+mpush $con_dao createorder '[202508011001,"'"${con_mobileauth}"'","aliceaaa1115",true,1,["string", "13800138000"] ]'\
+ -p $con_mobileauth -p $con_dao
 
 
 
 
 
-new_acc=aliceaaa1213
+new_acc=aliceaaa1214
 
 
-mpush $auth newaccount \
-'["'"$auth"'", "'"$con"'", "'"$new_acc"'", "1331234567", {"threshold":1,"keys":[{"key":"'"$newpubkey"'", "weight":1}],"accounts":[],"waits":[]}]' \
--p $auth  
+mpush $con_mobileauth newaccount \
+'["'"$con_mobileauth"'", "'"$con_owner"'", "'"$new_acc"'", "1331234567", {"threshold":1,"keys":[{"key":"'"$newpubkey"'", "weight":1}],"accounts":[],"waits":[]}]' \
+-p $con_mobileauth  
  
 
 
 
-mpush $auth updateinfo \
-'["'"$auth"'", "'"$new_acc"'", "13312345678"]' \
--p $auth
+mpush $con_mobileauth updateinfo \
+'["'"$con_mobileauth"'", "'"$new_acc"'", "13312345678"]' \
+-p $con_mobileauth
 
 
 
-mpush $dao addregauth '["'"$new_acc"'", "'"$authemail"'"]' -p $new_acc  
-mpush $dao addregauth '["'"$new_acc"'", "'"$authtg"'"]' -p $new_acc  
+mpush $con_dao addregauth '["'"$new_acc"'", "'"$con_emailauth"'"]' -p $new_acc  
+mpush $con_dao addregauth '["'"$new_acc"'", "'"$con_authtg"'"]' -p $new_acc  
 
 
-mpush $dao checkauth '["'"$authemail"'", "'"$new_acc"'"]' -p $authemail
-mpush $dao checkauth '["'"$auth"'", "'"$new_acc"'"]' -p $auth
-mpush $dao checkauth '["'"$authtg"'", "'"$new_acc"'"]' -p $authtg
+mpush $con_dao checkauth '["'"$con_emailauth"'", "'"$new_acc"'"]' -p $con_emailauth
+mpush $con_dao checkauth '["'"$auth"'", "'"$new_acc"'"]' -p $auth
+mpush $con_dao checkauth '["'"$con_authtg"'", "'"$new_acc"'"]' -p $con_authtg
 
-mpush $auth createorder '[202508011001,"'"${auth}"'","aliceaaa1123",false,1,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
- -p $auth
+mpush $con_mobileauth createorder '[202508011001,"'"${con_mobileauth}"'","aliceaaa1123",false,1,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
+ -p $con_mobileauth
 
-mpush $auth createorder '[202508011035,"'"${auth}"'","aliceaaa1211",false,80,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
- -p $auth
+mpush $con_mobileauth createorder '[202508011036,"'"${con_mobileauth}"'","aliceaaa1214",false,80,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
+ -p $con_mobileauth
 
 
- mpush $dao delregauth  '["'"$authemail"'", "'"$new_acc"'"]' -p $authemail
- mpush $dao delregauth  '["'"$auth"'", "'"$new_acc"'"]' -p $auth
+ mpush $con_dao delregauth  '["'"$con_emailauth"'", "'"$new_acc"'"]' -p $con_emailauth
+ mpush $con_dao delregauth  '["'"$con_mobileauth"'", "'"$new_acc"'"]' -p $con_mobileauth
 
 
 
 
 #删除订单
- mpush $dao  delorder '["aliceaaa1153", 14]' -p aliceaaa1153
+ mpush $con_dao  delorder '["aliceaaa1153", 14]' -p aliceaaa1153
 
 
 
 
 
 
- mpush $dao setscore '["'"${auth}"'", "aliceaaa1153", 14, 1]' -p $auth
+ mpush $con_dao setscore '["'"${con_mobileauth}"'", "aliceaaa1153", 14, 1]' -p $con_mobileauth
 
 
 
 
  #删除配置项
- mpush $dao delauditconf '["'"${auth}"'"]' -p $dao
+ mpush $con_dao delauditconf '["'"${con_mobileauth}"'"]' -p $con_dao
