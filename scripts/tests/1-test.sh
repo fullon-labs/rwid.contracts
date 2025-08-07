@@ -125,14 +125,14 @@ mpush $con_dao addauditconf \
 -p $con_dao
 
 
-mpush $con_dao createorder '[202508011001,"'"${con_mobileauth}"'","aliceaaa1115",true,1,["string", "13800138000"] ]'\
+mpush $con_dao createorder '[202508011001,"'"${con_mobileauth}"'","hufg2tdogcun",true,1,["string", "13800138000"] ]'\
  -p $con_mobileauth -p $con_dao
 
 
 
 
 
-new_acc=aliceaaa1223
+new_acc=aliceaaa1241
 
 
 mpush $con_mobileauth newaccount \
@@ -159,7 +159,7 @@ mpush $con_dao checkauth '["'"$con_authtg"'", "'"$new_acc"'"]' -p $con_authtg
 mpush $con_mobileauth createorder '[202508011001,"'"${con_mobileauth}"'","aliceaaa1123",false,1,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
  -p $con_mobileauth
 
-mpush $con_mobileauth createorder '[202508011036,"'"${con_mobileauth}"'","aliceaaa1214",false,80,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
+mpush $con_mobileauth createorder '[41,"'"${con_mobileauth}"'","aliceaaa1241",false,70,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
  -p $con_mobileauth
 
 
@@ -170,7 +170,7 @@ mpush $con_mobileauth createorder '[202508011036,"'"${con_mobileauth}"'","alicea
 
 
 #删除订单
- mpush $con_dao  delorder '["aliceaaa1153", 14]' -p aliceaaa1153
+ mpush $con_dao  delorder '["hufbkudowbby", 20]' -p aliceaaa1153
 
 
 
@@ -183,4 +183,8 @@ mpush $con_mobileauth createorder '[202508011036,"'"${con_mobileauth}"'","alicea
 
 
  #删除配置项
- mpush $con_dao delauditconf '["'"${con_mobileauth}"'"]' -p $con_dao
+ mpush $con_dao delauditconf '["'"${con_emailauth}"'"]' -p $con_dao
+
+
+
+  mpush $con_dao delrecauth '["hufzt1eiqwn2"]' -p $con_dao

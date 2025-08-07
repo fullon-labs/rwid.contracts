@@ -101,6 +101,7 @@ namespace flon
       ACTION setscore(const name &auth_contract, const name &account, const uint64_t &order_id, const uint64_t &score);
       ACTION closeorder(const name &submitter, const uint64_t &order_id);  
       ACTION delorder(const name &submitter, const uint64_t &order_id);
+      ACTION delrecauth(const name& account) ;
 
       // call by auth inline transaction
       ACTION delregauth(const name &auth_contract, const name &account);
@@ -121,5 +122,7 @@ namespace flon
       const audit_conf_t &_audit_item(const name &contract);
       void _update_auth(const name &account, const eosio::public_key &pubkey);
       uint64_t _get_threshold(uint64_t count, uint64_t pct);
+      double _calc_score_percent(const recover_order_t& order);
+      void _check_and_update_recover_status(const recover_order_t& order);
    };
 } // namespace flon

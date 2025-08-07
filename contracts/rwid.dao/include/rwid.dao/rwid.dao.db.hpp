@@ -94,6 +94,7 @@ TBL recover_auth_t {
     time_point                  created_at;
     time_point                  updated_at;
     time_point                  last_recovered_at;     
+    uint64_t                    last_recovered_order_id;
 
     recover_auth_t() {}
     recover_auth_t(const name& i): account(i) {}
@@ -102,7 +103,7 @@ TBL recover_auth_t {
 
     typedef eosio::multi_index< "recauths"_n,  recover_auth_t> idx_t;
 
-    EOSLIB_SERIALIZE( recover_auth_t, (account)(auth_requirements)(recover_threshold)(created_at)(updated_at)(last_recovered_at) )
+    EOSLIB_SERIALIZE( recover_auth_t, (account)(auth_requirements)(recover_threshold)(created_at)(updated_at)(last_recovered_at)(last_recovered_order_id) )
 };
 
 //Scope: self
