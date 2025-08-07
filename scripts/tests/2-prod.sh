@@ -35,7 +35,7 @@ mcli set account permission $con_emailauth active --add-code
 #rwid.admin 的共钥： 
 mreg flon rwid.admin 共钥(替换)   #私钥加密后给terr
 # 合约初始化
-mpush $con_owner init '["'"${con_dao}"'", "0.10000000 FLON"]' -p $con # set gas as 0.1 FLON
+mpush $con_owner init '["'"${con_dao}"'", "0.10000000 FLON"]' -p $con_owner # set gas as 0.1 FLON
 
 
 rwid_admin=rwid.admin
