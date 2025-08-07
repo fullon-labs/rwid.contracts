@@ -39,14 +39,14 @@ mpush $con_owner init '["'"${con_dao}"'", "0.10000000 FLON"]' -p $con # set gas 
 
 
 rwid_admin=rwid.admin
-mpush $con_mobileauth init '["'"$con_dao"'", "'"$rwid_admin"'","mobileno"]' -p $con_mobileauth
+mpush $con_mobileauth init '["'"$con_dao"'", "'"$con_owner"'","mobileno"]' -p $con_mobileauth
 
 mpush $con_mobileauth setadminauth \
 '["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
 -p $con_mobileauth
 
 
-mpush $con_emailauth init '["'"$con_dao"'", "'"$rwid_admin"'","email"]' -p $con_emailauth
+mpush $con_emailauth init '["'"$con_dao"'", "'"$con_owner"'","email"]' -p $con_emailauth
 
 mpush $con_emailauth setadminauth \
 '["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
