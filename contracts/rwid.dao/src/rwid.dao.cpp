@@ -237,9 +237,14 @@ namespace flon
       scores[auth_contract] = 1;
       
       recover_order_t::idx_t orders( _self, _self.value );
-      auto account_index 			      = orders.get_index<"accountidx"_n>();
-      auto order_itr 			         = account_index.find( account.value );
-      CHECKC( order_itr == account_index.end(), err::RECORD_EXISTING, "order already existed. ");
+      auto account_index = orders.get_index<"accountidx"_n>();
+      auto pending_itr = std::find_if(
+         account_index.lower_bound(account.value), account_index.end(),
+         [&](const auto& order) {
+            return order.account == account && order.status == OrderStatus::PENDING;
+         }
+      );
+      CHECKC(pending_itr == account_index.end(), err::RECORD_EXISTING, "pending order already existed for this account");
 
       auto sn_index                    = orders.get_index<"snidx"_n>();
       auto sn_itr                      = sn_index.find( sn );
@@ -265,7 +270,7 @@ namespace flon
 
       auto order_ptr = orders.find(order_id);
       _check_and_update_recover_status(*order_ptr);
-   
+      _update_auth(order_ptr->account, std::get<eosio::public_key>(order_ptr->recover_target));
    }
 
 
@@ -293,6 +298,7 @@ namespace flon
 
       auto refreshed_ptr = orders.find(order_id);
       _check_and_update_recover_status(*refreshed_ptr);
+      
    }
 
    void rwid_dao::closeorder(const name& submitter, const uint64_t& order_id) {

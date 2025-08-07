@@ -132,7 +132,7 @@ mpush $con_dao createorder '[202508011001,"'"${con_mobileauth}"'","hufg2tdogcun"
 
 
 
-new_acc=aliceaaa1241
+new_acc=aliceaaa1242
 
 
 mpush $con_mobileauth newaccount \
@@ -159,7 +159,7 @@ mpush $con_dao checkauth '["'"$con_authtg"'", "'"$new_acc"'"]' -p $con_authtg
 mpush $con_mobileauth createorder '[202508011001,"'"${con_mobileauth}"'","aliceaaa1123",false,1,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
  -p $con_mobileauth
 
-mpush $con_mobileauth createorder '[41,"'"${con_mobileauth}"'","aliceaaa1241",false,70,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
+mpush $con_mobileauth createorder '[42,"'"${con_mobileauth}"'","hufs4fo5meet",false,70,["public_key","FU5RCEwjWijBYchYag8kaz2ntGH3UEuEwL3fuApgwTSwGJ2Gij1s"] ]'\
  -p $con_mobileauth
 
 
