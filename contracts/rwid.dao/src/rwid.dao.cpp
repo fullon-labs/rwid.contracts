@@ -155,7 +155,7 @@ namespace flon
    double rwid_dao::_calc_score_percent(const recover_order_t& order) {
       // 1. 查找所有 MANUAL 类型的 contract
       std::set<name> manual_keys;
-      const name manual_type = rwidCheckType::MANUAL;
+      const name manual_type = RWIDCheckType::MANUAL;
       audit_conf_t::idx_t auditscores(_self, _self.value);
       auto auditscore_idx = auditscores.get_index<"audittype"_n>();
       for (auto itr = auditscore_idx.begin(); itr != auditscore_idx.end(); ++itr) {
@@ -227,9 +227,9 @@ namespace flon
       if (manual_check_required) {
          audit_conf_t::idx_t auditconfs(_self, _self.value);
          auto auditconf_itx = auditconfs.get_index<"audittype"_n>();
-         auto auditconf_itr =  auditconf_itx.find(rwidCheckType::MANUAL.value);
+         auto auditconf_itr =  auditconf_itx.find(RWIDCheckType::MANUAL.value);
          CHECKC( auditconf_itr != auditconf_itx.end(), err::RECORD_NOT_FOUND,
-                           "record not existed, " + rwidCheckType::MANUAL.to_string());
+                           "record not existed, " + RWIDCheckType::MANUAL.to_string());
          duration_second    = manual_order_expiry_duration;
          scores[auditconf_itr->contract] = -1;
       }

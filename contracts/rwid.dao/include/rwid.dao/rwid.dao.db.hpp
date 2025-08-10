@@ -37,7 +37,7 @@ namespace PayStatus {
     static constexpr eosio::name PAID       { "paid"_n      };
     static constexpr eosio::name NOPAY      { "nopay"_n     };
 }
-namespace rwidCheckType {
+namespace RWIDCheckType {
     static constexpr eosio::name MOBILENO    { "mobileno"_n     };
     static constexpr eosio::name SAFETYANSWER{ "safetyanswer"_n };
     static constexpr eosio::name DID         { "did"_n          };
