@@ -217,7 +217,7 @@ namespace flon
 
       recover_auth_t::idx_t recoverauths(_self, _self.value);
       auto audit_ptr     = recoverauths.find(account.value);
-      CHECKC( audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist. ");
+      CHECKC( audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist");
       map<name, int8_t> scores;
       for ( auto& [key, value]: audit_ptr->auth_requirements ) {
          if (value) scores[key] = -1;
@@ -256,7 +256,7 @@ namespace flon
 
       orders.emplace( _self, [&]( auto& row ) {
          row.id 					      = order_id;
-         row.sn                     =  sn;
+         row.sn                     = sn;
          row.account 			      = account;
          row.scores                 = scores;
          row.recover_type           = UpdateActionType::PUBKEY;
