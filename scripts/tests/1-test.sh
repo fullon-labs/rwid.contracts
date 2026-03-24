@@ -75,6 +75,15 @@ mpush $con_mobileauth setadminauth \
 -p $con_mobileauth
 
 
+mpush $con_emailauth init '["'"$con_dao"'", "'"$con_owner"'","email"]' -p $con_emailauth
+
+
+rwid_admin=rwid.admin
+mpush $con_emailauth setadminauth \
+'["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
+-p $con_emailauth
+
+
 
 # rwid.dao 合约初始化
 mpush $con_dao init '[75, "'"$con_owner"'"]' -p $con_dao

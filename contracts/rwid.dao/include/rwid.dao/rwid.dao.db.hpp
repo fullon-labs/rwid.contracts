@@ -37,7 +37,7 @@ namespace PayStatus {
     static constexpr eosio::name PAID       { "paid"_n      };
     static constexpr eosio::name NOPAY      { "nopay"_n     };
 }
-namespace rwidCheckType {
+namespace RWIDCheckType {
     static constexpr eosio::name MOBILENO    { "mobileno"_n     };
     static constexpr eosio::name SAFETYANSWER{ "safetyanswer"_n };
     static constexpr eosio::name DID         { "did"_n          };
@@ -127,11 +127,15 @@ TBL recover_order_t {
     uint64_t primary_key()const { return id; }
     uint64_t by_account() const { return account.value; }
     uint64_t by_sn() const { return sn; }
+    uint128_t by_account_status() const {
+        return (static_cast<uint128_t>(account.value) << 64) | status.value;
+    }
 
     typedef eosio::multi_index
     < "recorders"_n,  recover_order_t,
         indexed_by<"accountidx"_n, const_mem_fun<recover_order_t, uint64_t, &recover_order_t::by_account> >,
-        indexed_by<"snidx"_n, const_mem_fun<recover_order_t, uint64_t, &recover_order_t::by_sn> >
+        indexed_by<"snidx"_n, const_mem_fun<recover_order_t, uint64_t, &recover_order_t::by_sn> >,
+        indexed_by<"acctstatus"_n, const_mem_fun<recover_order_t, uint128_t, &recover_order_t::by_account_status> >
     > idx_t;
 
     EOSLIB_SERIALIZE( recover_order_t,  (id)(sn)(account)(recover_type)

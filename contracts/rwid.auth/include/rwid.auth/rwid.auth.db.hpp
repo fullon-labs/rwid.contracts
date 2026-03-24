@@ -33,7 +33,7 @@ static constexpr uint32_t MAX_TITLE_SIZE        = 256;
 #define TBL struct [[eosio::table, eosio::contract("rwid.auth")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("rwid.auth")]]
 
-namespace rwidCheckType {
+namespace RWIDCheckType {
     static constexpr eosio::name MOBILENO    { "mobileno"_n     };
     static constexpr eosio::name SAFETYANSWER{ "safetyanswer"_n };
     static constexpr eosio::name DID         { "did"_n          };
@@ -47,7 +47,7 @@ namespace rwidCheckType {
 NTBL("global") global_t {
     name                        flon_dao_contract;
     name                        rwid_owner_contract;
-    name                        auth_type;   //E.g. rwidCheckType::MOBILENO
+    name                        auth_type;   //E.g. RWIDCheckType::MOBILENO
 
     EOSLIB_SERIALIZE( global_t, (flon_dao_contract)(rwid_owner_contract)(auth_type))
 };

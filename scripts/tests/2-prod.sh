@@ -32,21 +32,25 @@ mcli set account permission $con_emailauth active --add-code
 
 
 
-
-
+#rwid.admin 的共钥： 
+mreg flon rwid.admin 共钥(替换)   #私钥加密后给terr
 # 合约初始化
-mpush $con_owner init '["'"${con_dao}"'", "0.10000000 FLON"]' -p $con # set gas as 0.1 FLON
+mpush $con_owner init '["'"${con_dao}"'", "0.10000000 FLON"]' -p $con_owner # set gas as 0.1 FLON
 
 
 rwid_admin=rwid.admin
+mpush $con_mobileauth init '["'"$con_dao"'", "'"$con_owner"'","mobileno"]' -p $con_mobileauth
+
 mpush $con_mobileauth setadminauth \
 '["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
 -p $con_mobileauth
 
 
-mpush $con_mobileauth setadminauth \
-'["'"$con_mobileauth"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
--p $con_mobileauth
+mpush $con_emailauth init '["'"$con_dao"'", "'"$con_owner"'","email"]' -p $con_emailauth
+
+mpush $con_emailauth setadminauth \
+'["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
+-p $con_emailauth
 
 mpush $con_dao init '[75, "'"$con_owner"'"]' -p $con_dao # 75%
 #也需要配置

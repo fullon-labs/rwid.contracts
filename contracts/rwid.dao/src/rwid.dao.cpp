@@ -18,6 +18,11 @@ namespace flon
 
    using namespace std;
 
+   static uint128_t make_account_status_key(const name& account, const name& status)
+   {
+      return (static_cast<uint128_t>(account.value) << 64) | status.value;
+   }
+
 #define CHECKC(exp, code, msg)                                                                                                              \
    {                                                                                                                                        \
       if (!(exp))                                                                                                                           \
@@ -155,13 +160,13 @@ namespace flon
    double rwid_dao::_calc_score_percent(const recover_order_t& order) {
       // 1. 查找所有 MANUAL 类型的 contract
       std::set<name> manual_keys;
-      const name manual_type = rwidCheckType::MANUAL;
+      const name manual_type = RWIDCheckType::MANUAL;
       audit_conf_t::idx_t auditscores(_self, _self.value);
       auto auditscore_idx = auditscores.get_index<"audittype"_n>();
-      for (auto itr = auditscore_idx.begin(); itr != auditscore_idx.end(); ++itr) {
-         if (itr->audit_type == manual_type) {
-            manual_keys.insert(itr->contract);
-         }
+      auto manual_begin = auditscore_idx.lower_bound(manual_type.value);
+      auto manual_end = auditscore_idx.upper_bound(manual_type.value);
+      for (auto itr = manual_begin; itr != manual_end; ++itr) {
+         manual_keys.insert(itr->contract);
       }
 
       // 2. 统计分数（排除 MANUAL）
@@ -180,12 +185,12 @@ namespace flon
    // 校验+落库副作用函数，业务 action 只用它
    void rwid_dao::_check_and_update_recover_status(const recover_order_t& order) {
       double avg_score_percent = _calc_score_percent(order);
-      
+
       recover_auth_t::idx_t recoverauths(_self, _self.value);
       auto audit_ptr = recoverauths.find(order.account.value);
       CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "recover auth not exist.");
       CHECKC(avg_score_percent >= audit_ptr->recover_threshold, err::SCORE_NOT_ENOUGH, "score not enough");
-      
+
       recoverauths.modify(*audit_ptr, _self, [&](auto& row) {
          row.last_recovered_at = current_time_point();
          row.last_recovered_order_id = order.id;
@@ -212,51 +217,46 @@ namespace flon
                         const recover_target_type& recover_target) {
 
       require_auth(auth_contract);
-      
+
       _audit_item(auth_contract);
 
       recover_auth_t::idx_t recoverauths(_self, _self.value);
       auto audit_ptr     = recoverauths.find(account.value);
-      CHECKC( audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist. ");
+      CHECKC( audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist");
       map<name, int8_t> scores;
       for ( auto& [key, value]: audit_ptr->auth_requirements ) {
          if (value) scores[key] = -1;
       }
-   
+
       auto duration_second    = order_expiry_duration;
       if (manual_check_required) {
          audit_conf_t::idx_t auditconfs(_self, _self.value);
          auto auditconf_itx = auditconfs.get_index<"audittype"_n>();
-         auto auditconf_itr =  auditconf_itx.find(rwidCheckType::MANUAL.value);
+         auto auditconf_itr =  auditconf_itx.find(RWIDCheckType::MANUAL.value);
          CHECKC( auditconf_itr != auditconf_itx.end(), err::RECORD_NOT_FOUND,
-                           "record not existed, " + rwidCheckType::MANUAL.to_string());
+                           "record not existed, " + RWIDCheckType::MANUAL.to_string());
          duration_second    = manual_order_expiry_duration;
          scores[auditconf_itr->contract] = -1;
       }
 
       scores[auth_contract] = 1;
-      
+
       recover_order_t::idx_t orders( _self, _self.value );
-      auto account_index = orders.get_index<"accountidx"_n>();
-      auto pending_itr = std::find_if(
-         account_index.lower_bound(account.value), account_index.end(),
-         [&](const auto& order) {
-            return order.account == account && order.status == OrderStatus::PENDING;
-         }
-      );
-      CHECKC(pending_itr == account_index.end(), err::RECORD_EXISTING, "pending order already existed for this account");
+      auto account_status_index = orders.get_index<"acctstatus"_n>();
+      auto pending_itr = account_status_index.find(make_account_status_key(account, OrderStatus::PENDING));
+      CHECKC(pending_itr == account_status_index.end(), err::RECORD_EXISTING, "pending order already existed for this account");
 
       auto sn_index                    = orders.get_index<"snidx"_n>();
       auto sn_itr                      = sn_index.find( sn );
       CHECKC( sn_itr == sn_index.end(), err::RECORD_EXISTING, "sn already existed. ");
 
       _gstate.last_order_id ++;
-      auto order_id           = _gstate.last_order_id; 
+      auto order_id           = _gstate.last_order_id;
       auto now                = current_time_point();
 
       orders.emplace( _self, [&]( auto& row ) {
          row.id 					      = order_id;
-         row.sn                     =  sn;
+         row.sn                     = sn;
          row.account 			      = account;
          row.scores                 = scores;
          row.recover_type           = UpdateActionType::PUBKEY;
@@ -283,7 +283,7 @@ namespace flon
       CHECKC(audit_ptr->auth_requirements.count(auth_contract) > 0 , err::NO_AUTH, "no auth for set score: " + account.to_string());
 
       _audit_item(auth_contract);
-      
+
       recover_order_t::idx_t orders(_self, _self.value);
       auto order_ptr     = orders.find(order_id);
       CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. ");
@@ -298,7 +298,7 @@ namespace flon
 
       auto refreshed_ptr = orders.find(order_id);
       _check_and_update_recover_status(*refreshed_ptr);
-      
+
    }
 
    void rwid_dao::closeorder(const name& submitter, const uint64_t& order_id) {
@@ -314,7 +314,7 @@ namespace flon
       CHECKC(order_ptr->expired_at > current_time_point(), err::TIME_EXPIRED, "order already time expired");
 
 
-      _check_and_update_recover_status(*order_ptr); 
+      _check_and_update_recover_status(*order_ptr);
 
       // 执行账户权限恢复
       _update_auth(order_ptr->account, std::get<eosio::public_key>(order_ptr->recover_target));
