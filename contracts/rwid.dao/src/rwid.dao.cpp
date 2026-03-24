@@ -328,9 +328,10 @@ namespace flon
 
       recover_order_t::idx_t orders(_self, _self.value);
       auto order_ptr     = orders.find(order_id);
-      CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. "); 
-
-      CHECKC(order_ptr->expired_at < current_time_point(), err::STATUS_ERROR, "order has not expired")
+      CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. ");
+      if (order_ptr->status == OrderStatus::PENDING) {
+         CHECKC(order_ptr->expired_at > current_time_point(), err::TIME_EXPIRED, "order already time expired");
+      }
       orders.erase(order_ptr);
    }
 
@@ -343,7 +344,6 @@ namespace flon
 
       recauths.erase(recauth_ptr);
    }
-
 
    void rwid_dao::updatepubkey(const name &auth_contract, const name &account, const public_key &publickey)
    {
