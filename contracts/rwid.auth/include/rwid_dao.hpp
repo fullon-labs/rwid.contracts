@@ -43,11 +43,11 @@ class rwid_dao {
                      const uint64_t&            score,
                      const recover_target_type& recover_target);
             
-            ACTION updatepubkey(const name& auth_contract, const name& account, const public_key& publickey);
+            ACTION updatepubkey(const name& submitter, const name& account, const public_key& publickey);
             ACTION setactive(const name& auth_contract, const name& account, const authority& active);
-            ACTION changepubkey(const name& auth_contract, const name& account, const public_key& old_pubkey, const public_key& new_pubkey);
-            ACTION delpubkeys(const name& auth_contract, const name& account, const vector<public_key>& pubkeys);
-            
+            ACTION changepubkey(const name& submitter, const name& account, const public_key& old_pubkey, const public_key& new_pubkey);
+            ACTION delpubkeys(const name& submitter, const name& account, const vector<public_key>& pubkeys);
+
             using newaccount_action       = eosio::action_wrapper<"newaccount"_n,   &rwid_dao::newaccount>;
             using checkauth_action        = eosio::action_wrapper<"checkauth"_n,    &rwid_dao::checkauth>;
             using setscore_action         = eosio::action_wrapper<"setscore"_n,     &rwid_dao::setscore>;

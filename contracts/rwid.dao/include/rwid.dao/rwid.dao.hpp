@@ -112,10 +112,10 @@ namespace flon
 
       ACTION delauditconf(const name &contract_name);
 
-      ACTION updatepubkey(const name &auth_contract, const name &account, const public_key &publickey);
+      ACTION updatepubkey(const name &submitter, const name &account, const public_key &publickey);
       ACTION setactive(const name &auth_contract, const name &account, const authority &active);
-      ACTION changepubkey(const name &auth_contract, const name &account, const public_key &old_pubkey, const public_key &new_pubkey);
-      ACTION delpubkeys(const name &auth_contract, const name &account, const vector<public_key> &pubkeys);
+      ACTION changepubkey(const name &submitter, const name &account, const public_key &old_pubkey, const public_key &new_pubkey);
+      ACTION delpubkeys(const name &submitter, const name &account, const vector<public_key> &pubkeys);
 
    private:
       global_singleton _global;
@@ -127,10 +127,11 @@ namespace flon
       void _apply_active_auth(const name &account, const authority &active);
       void _save_active_auth(const name &account, const authority &active);
       void _validate_active_auth(const authority &active);
-      void _check_pubkey_auth(const name &auth_contract, const name &account);
+      void _check_pubkey_auth(const name &submitter, const name &account);
       uint64_t _create_recover_order(const uint64_t &sn, const name &auth_contract, const name &account, const bool &manual_check_required, const uint64_t &score, const name &recover_type, const recover_target_type &recover_target);
       void _finish_order(const uint64_t &order_id);
       void _apply_order_target(const recover_order_t &order);
+      bool _is_recover_score_enough(const recover_order_t &order);
       void _validate_add_pubkey(const name &account, const public_key &pubkey);
       void _validate_change_pubkey(const name &account, const public_key &old_pubkey, const public_key &new_pubkey);
       void _add_pubkey_to_active(const name &account, const public_key &pubkey);

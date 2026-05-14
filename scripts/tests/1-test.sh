@@ -134,8 +134,8 @@ mpush $con_dao addauditconf \
 -p $con_dao
 
 
-mpush $con_dao createorder '[202508011001,"'"${con_mobileauth}"'","hufg2tdogcun",true,1,["string", "13800138000"] ]'\
- -p $con_mobileauth -p $con_dao
+mpush $con_mobileauth createorder '[202508011001,"'"${rwid_admin}"'","hufg2tdogcun",true,1,["string", "13800138000"] ]'\
+ -p $rwid_admin
 
 
 
@@ -165,11 +165,11 @@ mpush $con_dao checkauth '["'"$con_emailauth"'", "'"$new_acc"'"]' -p $con_emaila
 mpush $con_dao checkauth '["'"$auth"'", "'"$new_acc"'"]' -p $auth
 mpush $con_dao checkauth '["'"$con_authtg"'", "'"$new_acc"'"]' -p $con_authtg
 
-mpush $con_mobileauth createorder '[202508011001,"'"${con_mobileauth}"'","aliceaaa1123",false,1,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
- -p $con_mobileauth
+mpush $con_mobileauth createorder '[202508011001,"'"${rwid_admin}"'","aliceaaa1123",false,1,["public_key","FU5LDJBQ8nUEMkkKN3REvq22X4k5rsKNiAbBbYmJMNz9ydZNJbXk"] ]'\
+ -p $rwid_admin
 
-mpush $con_mobileauth createorder '[42,"'"${con_mobileauth}"'","hufs4fo5meet",false,70,["public_key","FU5RCEwjWijBYchYag8kaz2ntGH3UEuEwL3fuApgwTSwGJ2Gij1s"] ]'\
- -p $con_mobileauth
+mpush $con_mobileauth createorder '[42,"'"${rwid_admin}"'","hufs4fo5meet",false,70,["public_key","FU5RCEwjWijBYchYag8kaz2ntGH3UEuEwL3fuApgwTSwGJ2Gij1s"] ]'\
+ -p $rwid_admin
 
 
  mpush $con_dao delregauth  '["'"$con_emailauth"'", "'"$new_acc"'"]' -p $con_emailauth
@@ -186,7 +186,7 @@ mpush $con_mobileauth createorder '[42,"'"${con_mobileauth}"'","hufs4fo5meet",fa
 
 
 
- mpush $con_dao setscore '["'"${con_mobileauth}"'", "aliceaaa1153", 14, 1]' -p $con_mobileauth
+ mpush $con_mobileauth setscore '["'"${rwid_admin}"'", "aliceaaa1153", 14, 1]' -p $rwid_admin
 
 
 

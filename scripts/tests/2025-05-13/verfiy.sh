@@ -29,20 +29,12 @@ mpush mobile.rwid updatepubkey \
 mcli get table rwid.dao rwid.dao activeauths
 mcli get account "$acc"
 
-echo "2. recovery: createorder to add pubkey"
+echo "2. recovery: createorder to add pubkey, finish directly if score is enough"
 mpush mobile.rwid createorder \
-'['"$sn1"',"rwid.admin","'"$acc"'",false,0,["public_key","'"$key2"'"]]' \
+'['"$sn1"',"rwid.admin","'"$acc"'",false,1,["public_key","'"$key2"'"]]' \
 -p rwid.admin
 
 mcli get table rwid.dao rwid.dao recorders
-
-order1=$(mcli get table --index snidx --key-type i64 -L "$sn1" -U "$sn1" --limit 1 rwid.dao rwid.dao recorders | sed -n 's/.*"id": \([0-9]*\).*/\1/p' | head -n 1)
-
-echo "2.1 recovery: setscore to finish order"
-mpush mobile.rwid setscore \
-'["rwid.admin","'"$acc"'",'"$order1"',1]' \
--p rwid.admin
-
 mcli get table rwid.dao rwid.dao activeauths
 mcli get account "$acc"
 

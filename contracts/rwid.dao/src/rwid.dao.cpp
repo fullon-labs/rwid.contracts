@@ -217,7 +217,14 @@ namespace flon
                         const uint64_t&            score,
                         const recover_target_type& recover_target) {
 
-      _create_recover_order(sn, auth_contract, account, manual_check_required, score, UpdateActionType::PUBKEY, recover_target);
+      auto order_id = _create_recover_order(sn, auth_contract, account, manual_check_required, score, UpdateActionType::PUBKEY, recover_target);
+
+      recover_order_t::idx_t orders(_self, _self.value);
+      auto order_ptr = orders.find(order_id);
+      CHECKC(order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. ");
+      if (_is_recover_score_enough(*order_ptr)) {
+         _finish_order(order_id);
+      }
    }
 
 
@@ -273,9 +280,7 @@ namespace flon
       recover_order_t::idx_t orders(_self, _self.value);
       auto order_ptr     = orders.find(order_id);
       CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. ");
-      if (order_ptr->status == OrderStatus::PENDING) {
-         CHECKC(order_ptr->expired_at > current_time_point(), err::TIME_EXPIRED, "order already time expired");
-      }
+      CHECKC(order_ptr->status == OrderStatus::FINISHED, err::STATUS_ERROR, "order not finished");
       orders.erase(order_ptr);
    }
 
@@ -289,9 +294,9 @@ namespace flon
       recauths.erase(recauth_ptr);
    }
 
-   void rwid_dao::updatepubkey(const name &auth_contract, const name &account, const public_key &publickey)
+   void rwid_dao::updatepubkey(const name &submitter, const name &account, const public_key &publickey)
    {
-      _check_pubkey_auth(auth_contract, account);
+      _check_pubkey_auth(submitter, account);
       _update_auth(account, publickey);
    }
 
@@ -301,16 +306,16 @@ namespace flon
       _apply_active_auth(account, active);
    }
 
-   void rwid_dao::changepubkey(const name &auth_contract, const name &account, const public_key &old_pubkey, const public_key &new_pubkey)
+   void rwid_dao::changepubkey(const name &submitter, const name &account, const public_key &old_pubkey, const public_key &new_pubkey)
    {
-      _check_pubkey_auth(auth_contract, account);
+      _check_pubkey_auth(submitter, account);
       CHECKC(!(old_pubkey == new_pubkey), err::PARAM_ERROR, "new pubkey must be different");
       _change_pubkey_in_active(account, old_pubkey, new_pubkey);
    }
 
-   void rwid_dao::delpubkeys(const name &auth_contract, const name &account, const vector<public_key> &pubkeys)
+   void rwid_dao::delpubkeys(const name &submitter, const name &account, const vector<public_key> &pubkeys)
    {
-      _check_pubkey_auth(auth_contract, account);
+      _check_pubkey_auth(submitter, account);
       _del_pubkeys_from_active(account, pubkeys);
    }
 
@@ -464,6 +469,33 @@ namespace flon
       }
    }
 
+   bool rwid_dao::_is_recover_score_enough(const recover_order_t &order)
+   {
+      std::set<name> manual_keys;
+      audit_conf_t::idx_t auditscores(_self, _self.value);
+      auto auditscore_idx = auditscores.get_index<"audittype"_n>();
+      auto manual_begin = auditscore_idx.lower_bound(RWIDCheckType::MANUAL.value);
+      auto manual_end = auditscore_idx.upper_bound(RWIDCheckType::MANUAL.value);
+      for (auto itr = manual_begin; itr != manual_end; ++itr) {
+         manual_keys.insert(itr->contract);
+      }
+
+      int total_score = 0;
+      int score_count = 0;
+      for (const auto &[key, value] : order.scores) {
+         if (manual_keys.count(key)) continue;
+         if (value <= 0) return false;
+         total_score += value;
+         score_count++;
+      }
+      if (score_count == 0) return false;
+
+      recover_auth_t::idx_t recoverauths(_self, _self.value);
+      auto audit_ptr = recoverauths.find(order.account.value);
+      CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "recover auth not exist.");
+      return (1.0 * total_score / score_count * 100) >= audit_ptr->recover_threshold;
+   }
+
    void rwid_dao::_update_auth(const name &account, const eosio::public_key &pubkey)
    {
       authority active = {1, {{pubkey, 1}}, {}, {}};
@@ -609,16 +641,16 @@ namespace flon
       _apply_active_auth(account, active);
    }
 
-   void rwid_dao::_check_pubkey_auth(const name &auth_contract, const name &account)
+   void rwid_dao::_check_pubkey_auth(const name &submitter, const name &account)
    {
-      require_auth(auth_contract);
+      require_auth(submitter);
 
       recover_auth_t::idx_t recoverauths(_self, _self.value);
       auto audit_ptr = recoverauths.find(account.value);
       CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist. ");
-      CHECKC(audit_ptr->auth_requirements.count(auth_contract) > 0, err::NO_AUTH, "no auth for update pubkey: " + account.to_string());
+      CHECKC(audit_ptr->auth_requirements.count(submitter) > 0, err::NO_AUTH, "no auth for update pubkey: " + account.to_string());
 
-      _audit_item(auth_contract);
+      _audit_item(submitter);
 
       recoverauths.modify(*audit_ptr, _self, [&](auto &row) {
          row.last_recovered_at = current_time_point();
