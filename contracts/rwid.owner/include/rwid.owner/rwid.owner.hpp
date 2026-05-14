@@ -28,6 +28,7 @@ using namespace wasm;
 
 static constexpr name      NFT_BANK    = "did.ntoken"_n;
 static constexpr eosio::name active_perm{"active"_n};
+static constexpr uint32_t MAX_ACTIVE_KEYS = 10;
 
 
 enum class err: uint8_t {
@@ -85,6 +86,8 @@ class [[eosio::contract("rwid.owner")]] rwid_owner : public contract {
 
    ACTION newaccount( const name& auth_contract, const name& creator, const name& account, const authority& active);
 
+   ACTION setactive( const name& account, const authority& active );
+
    ACTION updateauth( const name& account, const eosio::public_key& pubkey );
 
     private:
@@ -93,6 +96,8 @@ class [[eosio::contract("rwid.owner")]] rwid_owner : public contract {
 
    private:
       void _check_action_auth(const name& admin, const name& action_type);
+      void _validate_active_auth(const authority& active);
+      void _set_active(const name& account, const authority& active);
    
 };
 

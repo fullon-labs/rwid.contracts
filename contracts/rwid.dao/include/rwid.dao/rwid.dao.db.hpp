@@ -7,6 +7,7 @@
 #include <eosio/time.hpp>
 #include <eosio/binary_extension.hpp> 
 #include <utils.hpp>
+#include <flon_system.hpp>
 
 #include <optional>
 #include <string>
@@ -58,6 +59,7 @@ namespace OrderStatus {
     static constexpr eosio::name CANCELLED   { "cancelled"_n };
 }
 
+static constexpr uint32_t MAX_ACTIVE_KEYS = 10;
 
 /* public key -> update content */
 typedef std::variant<eosio::public_key, string> recover_target_type;
@@ -104,6 +106,22 @@ TBL recover_auth_t {
     typedef eosio::multi_index< "recauths"_n,  recover_auth_t> idx_t;
 
     EOSLIB_SERIALIZE( recover_auth_t, (account)(auth_requirements)(recover_threshold)(created_at)(updated_at)(last_recovered_at)(last_recovered_order_id) )
+};
+
+//Scope: _self
+TBL active_auth_t {
+    name                        account;                //PK
+    authority                   active;
+    time_point                  updated_at;
+
+    active_auth_t() {}
+    active_auth_t(const name& i): account(i) {}
+
+    uint64_t primary_key()const { return account.value ; }
+
+    typedef eosio::multi_index< "activeauths"_n,  active_auth_t> idx_t;
+
+    EOSLIB_SERIALIZE( active_auth_t, (account)(active)(updated_at) )
 };
 
 //Scope: self

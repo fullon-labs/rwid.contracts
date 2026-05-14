@@ -42,14 +42,14 @@ rwid_admin=rwid.admin
 mpush $con_mobileauth init '["'"$con_dao"'", "'"$con_owner"'","mobileno"]' -p $con_mobileauth
 
 mpush $con_mobileauth setadminauth \
-'["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
+'["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","setactive","changepubkey","delpubkeys","createorder","setscore"]]' \
 -p $con_mobileauth
 
 
 mpush $con_emailauth init '["'"$con_dao"'", "'"$con_owner"'","email"]' -p $con_emailauth
 
 mpush $con_emailauth setadminauth \
-'["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","createorder"]]' \
+'["'"$rwid_admin"'", ["newaccount","bindinfo", "updateinfo", "delinfo", "updatepubkey","setactive","changepubkey","delpubkeys","createorder","setscore"]]' \
 -p $con_emailauth
 
 mpush $con_dao init '[75, "'"$con_owner"'"]' -p $con_dao # 75%
@@ -79,4 +79,3 @@ mpush $con_dao addauditconf \
   "status":"running"
 }]' \
 -p $con_dao
-

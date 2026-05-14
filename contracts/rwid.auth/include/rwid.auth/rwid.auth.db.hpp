@@ -27,6 +27,9 @@ namespace ActionType {
     static constexpr eosio::name CREATECORDER   { "createorder"_n }; //create recover order
     static constexpr eosio::name SETSCORE       { "setscore"_n    }; //set score for user verfication
     static constexpr eosio::name UPDATEPUBKEY   { "updatepubkey"_n    }; //updateauth
+    static constexpr eosio::name SETACTIVE      { "setactive"_n   };
+    static constexpr eosio::name CHANGEPUBKEY   { "changepubkey"_n };
+    static constexpr eosio::name DELPUBKEYS     { "delpubkeys"_n  };
 }
 static constexpr uint32_t MAX_TITLE_SIZE        = 256;
 

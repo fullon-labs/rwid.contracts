@@ -11,11 +11,12 @@
 #include <flon_system.hpp>
 #include <rwid_dao.hpp>
 #include <set>
+#include <vector>
 
-typedef std::variant<eosio::public_key, string> recover_target_type;
 namespace flon {
 
 using std::string;
+using std::vector;
 
 using namespace wasm::db;
 using namespace eosio;
@@ -84,6 +85,9 @@ class [[eosio::contract("rwid.auth")]] flon_auth : public contract {
    ACTION newaccount( const name& admin, const name& creator, const name& account, const string& info, const authority& active );
    
    ACTION updatepubkey( const name& admin, const name& account, const public_key& pubkey);
+   ACTION setactive( const name& admin, const name& account, const authority& active);
+   ACTION changepubkey( const name& admin, const name& account, const public_key& old_pubkey, const public_key& new_pubkey);
+   ACTION delpubkeys( const name& admin, const name& account, const vector<public_key>& pubkeys);
    /**
     * @brief 
     * 

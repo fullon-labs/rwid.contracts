@@ -62,6 +62,7 @@ namespace flon
       recoverauth.updated_at = now;
       recoverauth.last_recovered_order_id = 0;
       _dbc.set(recoverauth, _self);
+      _save_active_auth(account, active);
 
       rwid_owner::newaccount_action newaccount_act(_gstate.rwid_owner_contract, {{get_self(), "active"_n}});
       newaccount_act.send(auth_contract, creator, account, active);
@@ -216,61 +217,7 @@ namespace flon
                         const uint64_t&            score,
                         const recover_target_type& recover_target) {
 
-      require_auth(auth_contract);
-
-      _audit_item(auth_contract);
-
-      recover_auth_t::idx_t recoverauths(_self, _self.value);
-      auto audit_ptr     = recoverauths.find(account.value);
-      CHECKC( audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist");
-      map<name, int8_t> scores;
-      for ( auto& [key, value]: audit_ptr->auth_requirements ) {
-         if (value) scores[key] = -1;
-      }
-
-      auto duration_second    = order_expiry_duration;
-      if (manual_check_required) {
-         audit_conf_t::idx_t auditconfs(_self, _self.value);
-         auto auditconf_itx = auditconfs.get_index<"audittype"_n>();
-         auto auditconf_itr =  auditconf_itx.find(RWIDCheckType::MANUAL.value);
-         CHECKC( auditconf_itr != auditconf_itx.end(), err::RECORD_NOT_FOUND,
-                           "record not existed, " + RWIDCheckType::MANUAL.to_string());
-         duration_second    = manual_order_expiry_duration;
-         scores[auditconf_itr->contract] = -1;
-      }
-
-      scores[auth_contract] = 1;
-
-      recover_order_t::idx_t orders( _self, _self.value );
-      auto account_status_index = orders.get_index<"acctstatus"_n>();
-      auto pending_itr = account_status_index.find(make_account_status_key(account, OrderStatus::PENDING));
-      CHECKC(pending_itr == account_status_index.end(), err::RECORD_EXISTING, "pending order already existed for this account");
-
-      auto sn_index                    = orders.get_index<"snidx"_n>();
-      auto sn_itr                      = sn_index.find( sn );
-      CHECKC( sn_itr == sn_index.end(), err::RECORD_EXISTING, "sn already existed. ");
-
-      _gstate.last_order_id ++;
-      auto order_id           = _gstate.last_order_id;
-      auto now                = current_time_point();
-
-      orders.emplace( _self, [&]( auto& row ) {
-         row.id 					      = order_id;
-         row.sn                     = sn;
-         row.account 			      = account;
-         row.scores                 = scores;
-         row.recover_type           = UpdateActionType::PUBKEY;
-         row.recover_target         = recover_target;
-         row.pay_status             = PayStatus::NOPAY;
-         row.created_at             = current_time_point();
-         row.expired_at             = now + eosio::seconds(duration_second);
-         row.updated_at             = current_time_point();
-         row.status                 = OrderStatus::PENDING;
-      });
-
-      auto order_ptr = orders.find(order_id);
-      _check_and_update_recover_status(*order_ptr);
-      _update_auth(order_ptr->account, std::get<eosio::public_key>(order_ptr->recover_target));
+      _create_recover_order(sn, auth_contract, account, manual_check_required, score, UpdateActionType::PUBKEY, recover_target);
    }
 
 
@@ -297,7 +244,7 @@ namespace flon
       });
 
       auto refreshed_ptr = orders.find(order_id);
-      _check_and_update_recover_status(*refreshed_ptr);
+      _finish_order(refreshed_ptr->id);
 
    }
 
@@ -314,10 +261,7 @@ namespace flon
       CHECKC(order_ptr->expired_at > current_time_point(), err::TIME_EXPIRED, "order already time expired");
 
 
-      _check_and_update_recover_status(*order_ptr);
-
-      // 执行账户权限恢复
-      _update_auth(order_ptr->account, std::get<eosio::public_key>(order_ptr->recover_target));
+      _finish_order(order_ptr->id);
 
       // 删除该 order
       //orders.erase(order_ptr);
@@ -347,20 +291,27 @@ namespace flon
 
    void rwid_dao::updatepubkey(const name &auth_contract, const name &account, const public_key &publickey)
    {
+      _check_pubkey_auth(auth_contract, account);
+      _update_auth(account, publickey);
+   }
 
-      require_auth(auth_contract);
+   void rwid_dao::setactive(const name &auth_contract, const name &account, const authority &active)
+   {
+      _check_pubkey_auth(auth_contract, account);
+      _apply_active_auth(account, active);
+   }
 
-      recover_auth_t::idx_t recoverauths(_self, _self.value);
-      auto audit_ptr = recoverauths.find(account.value);
-      CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist. ");
-      CHECKC(audit_ptr->auth_requirements.count(auth_contract) > 0, err::NO_AUTH, "no auth for set score: " + account.to_string());
+   void rwid_dao::changepubkey(const name &auth_contract, const name &account, const public_key &old_pubkey, const public_key &new_pubkey)
+   {
+      _check_pubkey_auth(auth_contract, account);
+      CHECKC(!(old_pubkey == new_pubkey), err::PARAM_ERROR, "new pubkey must be different");
+      _change_pubkey_in_active(account, old_pubkey, new_pubkey);
+   }
 
-      _audit_item(auth_contract);
-
-      recoverauths.modify(*audit_ptr, _self, [&](auto &row)
-                          { row.last_recovered_at = current_time_point(); });
-
-      _update_auth(audit_ptr->account, publickey);
+   void rwid_dao::delpubkeys(const name &auth_contract, const name &account, const vector<public_key> &pubkeys)
+   {
+      _check_pubkey_auth(auth_contract, account);
+      _del_pubkeys_from_active(account, pubkeys);
    }
 
    void rwid_dao::addauditconf(const name &check_contract, const name &audit_type, const audit_conf_s &conf)
@@ -431,10 +382,248 @@ namespace flon
       // return auditscore_ptr;
    }
 
+   uint64_t rwid_dao::_create_recover_order(const uint64_t &sn, const name &auth_contract, const name &account, const bool &manual_check_required, const uint64_t &score, const name &recover_type, const recover_target_type &recover_target)
+   {
+      require_auth(auth_contract);
+
+      _audit_item(auth_contract);
+
+      recover_auth_t::idx_t recoverauths(_self, _self.value);
+      auto audit_ptr = recoverauths.find(account.value);
+      CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist");
+
+      map<name, int8_t> scores;
+      for (auto &[key, value] : audit_ptr->auth_requirements) {
+         if (value) scores[key] = -1;
+      }
+
+      auto duration_second = order_expiry_duration;
+      if (manual_check_required) {
+         audit_conf_t::idx_t auditconfs(_self, _self.value);
+         auto auditconf_itx = auditconfs.get_index<"audittype"_n>();
+         auto auditconf_itr = auditconf_itx.find(RWIDCheckType::MANUAL.value);
+         CHECKC(auditconf_itr != auditconf_itx.end(), err::RECORD_NOT_FOUND,
+                "record not existed, " + RWIDCheckType::MANUAL.to_string());
+         duration_second = manual_order_expiry_duration;
+         scores[auditconf_itr->contract] = -1;
+      }
+
+      scores[auth_contract] = (score == 0 ? 0 : 1);
+
+      recover_order_t::idx_t orders(_self, _self.value);
+      auto account_status_index = orders.get_index<"acctstatus"_n>();
+      auto pending_itr = account_status_index.find(make_account_status_key(account, OrderStatus::PENDING));
+      CHECKC(pending_itr == account_status_index.end(), err::RECORD_EXISTING, "pending order already existed for this account");
+
+      auto sn_index = orders.get_index<"snidx"_n>();
+      auto sn_itr = sn_index.find(sn);
+      CHECKC(sn_itr == sn_index.end(), err::RECORD_EXISTING, "sn already existed. ");
+
+      _gstate.last_order_id++;
+      auto order_id = _gstate.last_order_id;
+      auto now = current_time_point();
+
+      orders.emplace(_self, [&](auto &row) {
+         row.id = order_id;
+         row.sn = sn;
+         row.account = account;
+         row.scores = scores;
+         row.manual_check_required = manual_check_required;
+         row.recover_type = recover_type;
+         row.recover_target = recover_target;
+         row.pay_status = PayStatus::NOPAY;
+         row.created_at = now;
+         row.expired_at = now + eosio::seconds(duration_second);
+         row.updated_at = now;
+         row.status = OrderStatus::PENDING;
+      });
+
+      return order_id;
+   }
+
+   void rwid_dao::_finish_order(const uint64_t &order_id)
+   {
+      recover_order_t::idx_t orders(_self, _self.value);
+      auto order_ptr = orders.find(order_id);
+      CHECKC(order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. ");
+      CHECKC(order_ptr->status != OrderStatus::FINISHED, err::ACTION_REDUNDANT, "order already finished");
+
+      _check_and_update_recover_status(*order_ptr);
+
+      auto finished_ptr = orders.find(order_id);
+      CHECKC(finished_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. ");
+      _apply_order_target(*finished_ptr);
+   }
+
+   void rwid_dao::_apply_order_target(const recover_order_t &order)
+   {
+      if (order.recover_type == UpdateActionType::PUBKEY) {
+         _add_pubkey_to_active(order.account, std::get<eosio::public_key>(order.recover_target));
+      } else {
+         CHECKC(false, err::PARAM_ERROR, "unsupported recover type: " + order.recover_type.to_string());
+      }
+   }
+
    void rwid_dao::_update_auth(const name &account, const eosio::public_key &pubkey)
    {
-      rwid_owner::updateauth_action updateauth_act(_gstate.rwid_owner_contract, {{get_self(), "active"_n}});
-      updateauth_act.send(account, pubkey);
+      authority active = {1, {{pubkey, 1}}, {}, {}};
+      _apply_active_auth(account, active);
+   }
+
+   void rwid_dao::_apply_active_auth(const name &account, const authority &active)
+   {
+      _validate_active_auth(active);
+      _save_active_auth(account, active);
+
+      rwid_owner::setactive_action setactive_act(_gstate.rwid_owner_contract, {{get_self(), "active"_n}});
+      setactive_act.send(account, active);
+   }
+
+   void rwid_dao::_save_active_auth(const name &account, const authority &active)
+   {
+      _validate_active_auth(active);
+
+      active_auth_t::idx_t activeauths(_self, _self.value);
+      auto active_ptr = activeauths.find(account.value);
+      if (active_ptr != activeauths.end()) {
+         activeauths.modify(*active_ptr, _self, [&](auto &row) {
+            row.active = active;
+            row.updated_at = current_time_point();
+         });
+      } else {
+         activeauths.emplace(_self, [&](auto &row) {
+            row.account = account;
+            row.active = active;
+            row.updated_at = current_time_point();
+         });
+      }
+   }
+
+   void rwid_dao::_validate_active_auth(const authority &active)
+   {
+      CHECKC(active.threshold > 0, err::PARAM_ERROR, "active threshold must be positive");
+      CHECKC(active.keys.size() > 0, err::PARAM_ERROR, "active keys must not be empty");
+      CHECKC(active.keys.size() <= MAX_ACTIVE_KEYS, err::PARAM_ERROR, "too many active keys");
+      CHECKC(active.accounts.size() == 0, err::PARAM_ERROR, "active accounts are not supported");
+      CHECKC(active.waits.size() == 0, err::PARAM_ERROR, "active waits are not supported");
+
+      uint32_t total_weight = 0;
+      for (uint32_t i = 0; i < active.keys.size(); ++i) {
+         CHECKC(active.keys[i].weight > 0, err::PARAM_ERROR, "active key weight must be positive");
+         total_weight += active.keys[i].weight;
+         for (uint32_t j = i + 1; j < active.keys.size(); ++j) {
+            CHECKC(!(active.keys[i].key == active.keys[j].key), err::PARAM_ERROR, "duplicate active key");
+         }
+      }
+      CHECKC(total_weight >= active.threshold, err::PARAM_ERROR, "active threshold exceeds total key weight");
+   }
+
+   void rwid_dao::_validate_add_pubkey(const name &account, const public_key &pubkey)
+   {
+      active_auth_t::idx_t activeauths(_self, _self.value);
+      auto active_ptr = activeauths.find(account.value);
+      CHECKC(active_ptr != activeauths.end(), err::RECORD_NOT_FOUND, "active auth not initialized, call setactive first: " + account.to_string());
+
+      auto active = active_ptr->active;
+      for (const auto &key_weight : active.keys) {
+         CHECKC(!(key_weight.key == pubkey), err::RECORD_EXISTING, "pubkey already existed");
+      }
+      active.keys.push_back({pubkey, 1});
+      _validate_active_auth(active);
+   }
+
+   void rwid_dao::_validate_change_pubkey(const name &account, const public_key &old_pubkey, const public_key &new_pubkey)
+   {
+      active_auth_t::idx_t activeauths(_self, _self.value);
+      auto active_ptr = activeauths.find(account.value);
+      CHECKC(active_ptr != activeauths.end(), err::RECORD_NOT_FOUND, "active auth not initialized, call setactive first: " + account.to_string());
+
+      bool found = false;
+      for (const auto &key_weight : active_ptr->active.keys) {
+         CHECKC(!(key_weight.key == new_pubkey), err::RECORD_EXISTING, "new pubkey already existed");
+         if (key_weight.key == old_pubkey) found = true;
+      }
+      CHECKC(found, err::RECORD_NOT_FOUND, "old pubkey not found");
+   }
+
+   void rwid_dao::_add_pubkey_to_active(const name &account, const public_key &pubkey)
+   {
+      _validate_add_pubkey(account, pubkey);
+
+      active_auth_t::idx_t activeauths(_self, _self.value);
+      auto active_ptr = activeauths.find(account.value);
+      authority active = active_ptr->active;
+      active.keys.push_back({pubkey, 1});
+      _apply_active_auth(account, active);
+   }
+
+   void rwid_dao::_change_pubkey_in_active(const name &account, const public_key &old_pubkey, const public_key &new_pubkey)
+   {
+      _validate_change_pubkey(account, old_pubkey, new_pubkey);
+
+      active_auth_t::idx_t activeauths(_self, _self.value);
+      auto active_ptr = activeauths.find(account.value);
+      authority active = active_ptr->active;
+      for (auto &key_weight : active.keys) {
+         if (key_weight.key == old_pubkey) {
+            key_weight.key = new_pubkey;
+            break;
+         }
+      }
+      _apply_active_auth(account, active);
+   }
+
+   void rwid_dao::_del_pubkeys_from_active(const name &account, const vector<public_key> &pubkeys)
+   {
+      CHECKC(pubkeys.size() > 0, err::PARAM_ERROR, "pubkeys must not be empty");
+      CHECKC(pubkeys.size() <= MAX_ACTIVE_KEYS, err::PARAM_ERROR, "too many pubkeys");
+
+      for (uint32_t i = 0; i < pubkeys.size(); ++i) {
+         for (uint32_t j = i + 1; j < pubkeys.size(); ++j) {
+            CHECKC(!(pubkeys[i] == pubkeys[j]), err::PARAM_ERROR, "duplicate pubkey");
+         }
+      }
+
+      active_auth_t::idx_t activeauths(_self, _self.value);
+      auto active_ptr = activeauths.find(account.value);
+      CHECKC(active_ptr != activeauths.end(), err::RECORD_NOT_FOUND, "active auth not initialized, call setactive first: " + account.to_string());
+
+      authority active = active_ptr->active;
+      vector<key_weight> remaining_keys;
+
+      for (const auto &key_weight : active.keys) {
+         bool should_delete = false;
+         for (const auto &pubkey : pubkeys) {
+            if (key_weight.key == pubkey) {
+               should_delete = true;
+               break;
+            }
+         }
+         if (!should_delete) remaining_keys.push_back(key_weight);
+      }
+
+      CHECKC(active.keys.size() - remaining_keys.size() == pubkeys.size(), err::RECORD_NOT_FOUND, "pubkey not found");
+
+      active.keys = remaining_keys;
+      _validate_active_auth(active);
+      _apply_active_auth(account, active);
+   }
+
+   void rwid_dao::_check_pubkey_auth(const name &auth_contract, const name &account)
+   {
+      require_auth(auth_contract);
+
+      recover_auth_t::idx_t recoverauths(_self, _self.value);
+      auto audit_ptr = recoverauths.find(account.value);
+      CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist. ");
+      CHECKC(audit_ptr->auth_requirements.count(auth_contract) > 0, err::NO_AUTH, "no auth for update pubkey: " + account.to_string());
+
+      _audit_item(auth_contract);
+
+      recoverauths.modify(*audit_ptr, _self, [&](auto &row) {
+         row.last_recovered_at = current_time_point();
+         row.updated_at = current_time_point();
+      });
    }
 
 } // namespace flon

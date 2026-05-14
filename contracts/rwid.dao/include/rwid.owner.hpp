@@ -20,9 +20,12 @@ class rwid_owner {
       [[eosio::action]] 
       void updateauth( const name& account, const eosio::public_key& pubkey );
 
+      [[eosio::action]]
+      void setactive( const name& account, const authority& active );
 
       using newaccount_action = eosio::action_wrapper<"newaccount"_n, &rwid_owner::newaccount>;
       using updateauth_action = eosio::action_wrapper<"updateauth"_n, &rwid_owner::updateauth>;
+      using setactive_action = eosio::action_wrapper<"setactive"_n, &rwid_owner::setactive>;
 };
 
 } //namespace flon
