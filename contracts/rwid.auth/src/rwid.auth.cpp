@@ -97,13 +97,6 @@ namespace flon {
       changepubkey_act.send(get_self(), account, old_pubkey, new_pubkey);
    }
 
-   void flon_auth::delpubkeys( const name& admin, const name& account, const vector<public_key>& pubkeys){
-      _check_action_auth(admin, ActionType::DELPUBKEYS);
-
-      rwid_dao::delpubkeys_action delpubkeys_act(_gstate.flon_dao_contract, { {get_self(), ACTIVE_PERM} });
-      delpubkeys_act.send(get_self(), account, pubkeys);
-   }
-
    void flon_auth::createorder(  
                         const uint64_t&            sn,
                         const name&                auth,

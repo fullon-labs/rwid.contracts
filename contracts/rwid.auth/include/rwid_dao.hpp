@@ -46,7 +46,6 @@ class rwid_dao {
             ACTION updatepubkey(const name& submitter, const name& account, const public_key& publickey);
             ACTION setactive(const name& auth_contract, const name& account, const authority& active);
             ACTION changepubkey(const name& submitter, const name& account, const public_key& old_pubkey, const public_key& new_pubkey);
-            ACTION delpubkeys(const name& submitter, const name& account, const vector<public_key>& pubkeys);
 
             using newaccount_action       = eosio::action_wrapper<"newaccount"_n,   &rwid_dao::newaccount>;
             using checkauth_action        = eosio::action_wrapper<"checkauth"_n,    &rwid_dao::checkauth>;
@@ -56,7 +55,6 @@ class rwid_dao {
             using updatepubkey_action     = eosio::action_wrapper<"updatepubkey"_n,  &rwid_dao::updatepubkey>;
             using setactive_action        = eosio::action_wrapper<"setactive"_n,  &rwid_dao::setactive>;
             using changepubkey_action     = eosio::action_wrapper<"changepubkey"_n,  &rwid_dao::changepubkey>;
-            using delpubkeys_action       = eosio::action_wrapper<"delpubkeys"_n,  &rwid_dao::delpubkeys>;
 };
 
 }

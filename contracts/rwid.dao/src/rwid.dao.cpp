@@ -7,6 +7,7 @@
 static constexpr eosio::name active_permission{"active"_n};
 // static constexpr symbol APL_SYMBOL = symbol(symbol_code("APL"), 4);
 static constexpr eosio::name MT_BANK{"flon.token"_n};
+static constexpr eosio::name RWID_ADMIN{"rwid.admin"_n};
 
 // #define ALLOT_APPLE(farm_contract, lease_id, to, quantity, memo)                                            \
 //    {                                                                                                        \
@@ -315,7 +316,7 @@ namespace flon
 
    void rwid_dao::delpubkeys(const name &submitter, const name &account, const vector<public_key> &pubkeys)
    {
-      _check_pubkey_auth(submitter, account);
+      _check_del_pubkeys_auth(submitter, account);
       _del_pubkeys_from_active(account, pubkeys);
    }
 
@@ -651,6 +652,26 @@ namespace flon
       CHECKC(audit_ptr->auth_requirements.count(submitter) > 0, err::NO_AUTH, "no auth for update pubkey: " + account.to_string());
 
       _audit_item(submitter);
+
+      recoverauths.modify(*audit_ptr, _self, [&](auto &row) {
+         row.last_recovered_at = current_time_point();
+         row.updated_at = current_time_point();
+      });
+   }
+
+   void rwid_dao::_check_del_pubkeys_auth(const name &submitter, const name &account)
+   {
+      require_auth(submitter);
+
+      recover_auth_t::idx_t recoverauths(_self, _self.value);
+      auto audit_ptr = recoverauths.find(account.value);
+      CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist. ");
+
+      if (submitter != RWID_ADMIN)
+      {
+         CHECKC(audit_ptr->auth_requirements.count(submitter) > 0, err::NO_AUTH, "no auth for delete pubkeys: " + account.to_string());
+         _audit_item(submitter);
+      }
 
       recoverauths.modify(*audit_ptr, _self, [&](auto &row) {
          row.last_recovered_at = current_time_point();

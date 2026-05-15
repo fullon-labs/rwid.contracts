@@ -61,7 +61,7 @@ mcli get table rwid.dao rwid.dao activeauths
 mcli get account "$acc"
 
 echo "5. delete pubkeys: delpubkeys"
-mpush mobile.rwid delpubkeys \
+mpush rwid.dao delpubkeys \
 '["rwid.admin","'"$acc"'",["'"$key2"'","'"$key3"'"]]' \
 -p rwid.admin
 
