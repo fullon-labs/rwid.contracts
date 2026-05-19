@@ -28,6 +28,13 @@ namespace flon
    static constexpr name NFT_BANK = "did.ntoken"_n;
    static constexpr eosio::name active_perm{"active"_n};
 
+   struct refresh_active_item {
+      name account;
+      public_key publickey;
+
+      EOSLIB_SERIALIZE(refresh_active_item, (account)(publickey))
+   };
+
    enum class err : uint8_t
    {
       NONE = 0,
@@ -114,6 +121,7 @@ namespace flon
 
       ACTION updatepubkey(const name &submitter, const name &account, const public_key &publickey);
       ACTION setactive(const name &auth_contract, const name &account, const authority &active);
+      ACTION refreshactive(const name &submitter, const vector<refresh_active_item> &items);
       ACTION changepubkey(const name &submitter, const name &account, const public_key &old_pubkey, const public_key &new_pubkey);
       ACTION delpubkeys(const name &submitter, const name &account, const vector<public_key> &pubkeys);
 

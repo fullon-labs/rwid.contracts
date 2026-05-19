@@ -4,6 +4,8 @@
 #include <utils.hpp>
 #include <rwid.owner.hpp>
 
+#include <algorithm>
+
 static constexpr eosio::name active_permission{"active"_n};
 // static constexpr symbol APL_SYMBOL = symbol(symbol_code("APL"), 4);
 static constexpr eosio::name MT_BANK{"flon.token"_n};
@@ -22,6 +24,39 @@ namespace flon
    static uint128_t make_account_status_key(const name& account, const name& status)
    {
       return (static_cast<uint128_t>(account.value) << 64) | status.value;
+   }
+
+   static bool ecc_public_key_less(const ecc_public_key &lhs, const ecc_public_key &rhs)
+   {
+      for (uint32_t i = 0; i < lhs.size(); ++i) {
+         uint8_t lhs_byte = static_cast<uint8_t>(lhs[i]);
+         uint8_t rhs_byte = static_cast<uint8_t>(rhs[i]);
+         if (lhs_byte != rhs_byte) return lhs_byte < rhs_byte;
+      }
+      return false;
+   }
+
+   static bool webauthn_public_key_less(const webauthn_public_key &lhs, const webauthn_public_key &rhs)
+   {
+      if (ecc_public_key_less(lhs.key, rhs.key)) return true;
+      if (ecc_public_key_less(rhs.key, lhs.key)) return false;
+      if (lhs.user_presence != rhs.user_presence) return lhs.user_presence < rhs.user_presence;
+      return lhs.rpid < rhs.rpid;
+   }
+
+   static bool public_key_less(const public_key &lhs, const public_key &rhs)
+   {
+      if (lhs.index() != rhs.index()) return lhs.index() < rhs.index();
+      if (lhs.index() == 0) return ecc_public_key_less(std::get<0>(lhs), std::get<0>(rhs));
+      if (lhs.index() == 1) return ecc_public_key_less(std::get<1>(lhs), std::get<1>(rhs));
+      return webauthn_public_key_less(std::get<2>(lhs), std::get<2>(rhs));
+   }
+
+   static void normalize_active_authority(authority &active)
+   {
+      std::sort(active.keys.begin(), active.keys.end(), [](const key_weight &lhs, const key_weight &rhs) {
+         return public_key_less(lhs.key, rhs.key);
+      });
    }
 
 #define CHECKC(exp, code, msg)                                                                                                              \
@@ -63,10 +98,13 @@ namespace flon
       recoverauth.updated_at = now;
       recoverauth.last_recovered_order_id = 0;
       _dbc.set(recoverauth, _self);
-      _save_active_auth(account, active);
+
+      authority normalized_active = active;
+      normalize_active_authority(normalized_active);
+      _save_active_auth(account, normalized_active);
 
       rwid_owner::newaccount_action newaccount_act(_gstate.rwid_owner_contract, {{get_self(), "active"_n}});
-      newaccount_act.send(auth_contract, creator, account, active);
+      newaccount_act.send(auth_contract, creator, account, normalized_active);
    }
 
 
@@ -307,6 +345,31 @@ namespace flon
       _apply_active_auth(account, active);
    }
 
+   void rwid_dao::refreshactive(const name &submitter, const vector<refresh_active_item> &items)
+   {
+      require_auth(submitter);
+      CHECKC(submitter == RWID_ADMIN, err::NO_AUTH, "no auth for refresh active");
+      CHECKC(items.size() > 0, err::PARAM_ERROR, "items must not be empty");
+
+      uint32_t refreshed_count = 0;
+      recover_auth_t::idx_t recoverauths(_self, _self.value);
+      active_auth_t::idx_t activeauths(_self, _self.value);
+      for (uint32_t i = 0; i < items.size(); ++i) {
+         for (uint32_t j = i + 1; j < items.size(); ++j) {
+            CHECKC(items[i].account != items[j].account, err::PARAM_ERROR, "duplicate account: " + items[i].account.to_string());
+         }
+
+         auto audit_ptr = recoverauths.find(items[i].account.value);
+         CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist: " + items[i].account.to_string());
+         if (activeauths.find(items[i].account.value) != activeauths.end()) continue;
+
+         authority active = {1, {{items[i].publickey, 1}}, {}, {}};
+         _save_active_auth(items[i].account, active);
+         refreshed_count++;
+      }
+      CHECKC(refreshed_count > 0, err::ACTION_REDUNDANT, "no active auth refreshed");
+   }
+
    void rwid_dao::changepubkey(const name &submitter, const name &account, const public_key &old_pubkey, const public_key &new_pubkey)
    {
       _check_pubkey_auth(submitter, account);
@@ -505,28 +568,32 @@ namespace flon
 
    void rwid_dao::_apply_active_auth(const name &account, const authority &active)
    {
-      _validate_active_auth(active);
-      _save_active_auth(account, active);
+      authority normalized_active = active;
+      normalize_active_authority(normalized_active);
+      _validate_active_auth(normalized_active);
+      _save_active_auth(account, normalized_active);
 
       rwid_owner::setactive_action setactive_act(_gstate.rwid_owner_contract, {{get_self(), "active"_n}});
-      setactive_act.send(account, active);
+      setactive_act.send(account, normalized_active);
    }
 
    void rwid_dao::_save_active_auth(const name &account, const authority &active)
    {
-      _validate_active_auth(active);
+      authority normalized_active = active;
+      normalize_active_authority(normalized_active);
+      _validate_active_auth(normalized_active);
 
       active_auth_t::idx_t activeauths(_self, _self.value);
       auto active_ptr = activeauths.find(account.value);
       if (active_ptr != activeauths.end()) {
          activeauths.modify(*active_ptr, _self, [&](auto &row) {
-            row.active = active;
+            row.active = normalized_active;
             row.updated_at = current_time_point();
          });
       } else {
          activeauths.emplace(_self, [&](auto &row) {
             row.account = account;
-            row.active = active;
+            row.active = normalized_active;
             row.updated_at = current_time_point();
          });
       }
@@ -635,7 +702,8 @@ namespace flon
          if (!should_delete) remaining_keys.push_back(key_weight);
       }
 
-      CHECKC(active.keys.size() - remaining_keys.size() == pubkeys.size(), err::RECORD_NOT_FOUND, "pubkey not found");
+      uint32_t deleted_count = active.keys.size() - remaining_keys.size();
+      CHECKC(deleted_count > 0, err::RECORD_NOT_FOUND, "pubkey not found");
 
       active.keys = remaining_keys;
       _validate_active_auth(active);

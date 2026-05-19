@@ -3,6 +3,9 @@ set -e
 shopt -s expand_aliases
 source ~/.bashrc
 
+git clone git@github.com:fullon-labs/rwid.contracts.git
+cd rwid.contracts
+bash ./build.sh
 mset rwid.owner rwid.owner
 mset rwid.dao rwid.dao
 mset mobile.rwid rwid.auth
