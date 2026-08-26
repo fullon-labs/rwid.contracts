@@ -80,8 +80,11 @@ namespace flon
       _gstate.rwid_owner_contract = rwid_owner_contract;
    }
 
+   //invoked by another auth contract through inline action
    void rwid_dao::newaccount(const name &auth_contract, const name &creator, const name &account, const authority &active)
    {
+      require_auth(auth_contract);
+
       // check(is_account(account), "account invalid: " + account.to_string());
       recover_auth_t recoverauth(account);
       CHECKC(!_dbc.get(recoverauth), err::RECORD_EXISTING, "rwid account already created")
