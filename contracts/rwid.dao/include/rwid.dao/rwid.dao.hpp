@@ -108,6 +108,7 @@ namespace flon
       ACTION setscore(const name &auth_contract, const name &account, const uint64_t &order_id, const uint64_t &score);
       ACTION closeorder(const name &submitter, const uint64_t &order_id);  
       ACTION delorder(const name &submitter, const uint64_t &order_id);
+      ACTION cleanorders(const name &submitter, const uint64_t &max_count);
       ACTION delrecauth(const name& account) ;
 
       // call by auth inline transaction

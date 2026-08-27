@@ -339,6 +339,27 @@ namespace flon
       orders.erase(order_ptr);
    }
 
+   void rwid_dao::cleanorders(const name& submitter, const uint64_t& max_count) {
+      require_auth(submitter);
+      CHECKC(max_count > 0 && max_count <= max_order_cleanup_count,
+             err::PARAM_ERROR,
+             "max_count must be in range [1, " + to_string(max_order_cleanup_count) + "]")
+
+      recover_order_t::idx_t orders(_self, _self.value);
+      const auto now = current_time_point();
+      uint64_t cleaned_count = 0;
+
+      auto order_itr = orders.begin();
+      while (order_itr != orders.end() && cleaned_count < max_count) {
+         if (order_itr->status == OrderStatus::FINISHED && order_itr->expired_at <= now) {
+            order_itr = orders.erase(order_itr);
+            ++cleaned_count;
+         } else {
+            ++order_itr;
+         }
+      }
+   }
+
    void rwid_dao::delrecauth(const name& account) {
       require_auth(_self); // 只有合约账户能删
 

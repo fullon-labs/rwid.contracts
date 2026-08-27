@@ -26,6 +26,8 @@ using namespace eosio;
 static constexpr uint64_t seconds_per_day                   = 24 * 3600;
 static constexpr uint64_t order_expiry_duration             = seconds_per_day;
 static constexpr uint64_t manual_order_expiry_duration      = 3 * seconds_per_day;
+static constexpr uint64_t max_order_cleanup_count           = 500;
+static constexpr name rwid_admin_account                    = "rwid.admin"_n;
 
 #define TBL struct [[eosio::table, eosio::contract("rwid.dao")]]
 #define NTBL(name) struct [[eosio::table(name), eosio::contract("rwid.dao")]]
