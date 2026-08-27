@@ -463,6 +463,8 @@ namespace flon
       recover_auth_t::idx_t recoverauths(_self, _self.value);
       auto audit_ptr = recoverauths.find(account.value);
       CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist");
+      CHECKC(audit_ptr->auth_requirements.count(auth_contract) > 0,
+          err::NO_AUTH, "no auth for create order: " + account.to_string());
 
       map<name, int8_t> scores;
       for (auto &[key, value] : audit_ptr->auth_requirements) {
