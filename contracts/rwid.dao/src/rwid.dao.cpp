@@ -76,6 +76,10 @@ namespace flon
                        const name rwid_owner_contract)
    {
       require_auth(_self);
+         CHECKC(recover_threshold_pct > 0 && recover_threshold_pct <= 100,
+            err::PARAM_ERROR, "recover threshold must be in range (0,100]");
+         CHECKC(is_account(rwid_owner_contract), err::PARAM_ERROR,
+            "rwid owner contract invalid: " + rwid_owner_contract.to_string());
       _gstate.recover_threshold_pct = recover_threshold_pct;
       _gstate.rwid_owner_contract = rwid_owner_contract;
    }
@@ -299,12 +303,14 @@ namespace flon
 
    void rwid_dao::closeorder(const name& submitter, const uint64_t& order_id) {
       // 权限校验
-      CHECKC(has_auth(submitter), err::NO_AUTH, "rwid_dao no auth for operate");
+      CHECKC(has_auth(submitter), err::NO_AUTH, "submitter has not signed");
 
       // 获取 order 记录
       recover_order_t::idx_t orders(_self, _self.value);
       auto order_ptr = orders.find(order_id);
       CHECKC(order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found.");
+            CHECKC(order_ptr->scores.count(submitter) > 0, err::NO_AUTH,
+               "submitter is not authorized for order");
 
       // 校验订单是否过期
       CHECKC(order_ptr->expired_at > current_time_point(), err::TIME_EXPIRED, "order already time expired");
@@ -322,7 +328,14 @@ namespace flon
       recover_order_t::idx_t orders(_self, _self.value);
       auto order_ptr     = orders.find(order_id);
       CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. ");
-      CHECKC(order_ptr->status == OrderStatus::FINISHED, err::STATUS_ERROR, "order not finished");
+            CHECKC(order_ptr->status == OrderStatus::FINISHED || order_ptr->status == OrderStatus::PENDING,
+               err::STATUS_ERROR, "order cannot be deleted");
+            if (order_ptr->status == OrderStatus::PENDING) {
+           CHECKC(submitter == RWID_ADMIN || order_ptr->scores.count(submitter) > 0,
+              err::NO_AUTH, "submitter is not authorized for order");
+           CHECKC(order_ptr->expired_at <= current_time_point(),
+              err::TIME_EXPIRED, "order has not expired");
+            }
       orders.erase(order_ptr);
    }
 
@@ -338,13 +351,13 @@ namespace flon
 
    void rwid_dao::updatepubkey(const name &submitter, const name &account, const public_key &publickey)
    {
-      _check_pubkey_auth(submitter, account);
+      require_auth(_self);
       _update_auth(account, publickey);
    }
 
    void rwid_dao::setactive(const name &auth_contract, const name &account, const authority &active)
    {
-      _check_pubkey_auth(auth_contract, account);
+      require_auth(_self);
       _apply_active_auth(account, active);
    }
 
@@ -375,7 +388,7 @@ namespace flon
 
    void rwid_dao::changepubkey(const name &submitter, const name &account, const public_key &old_pubkey, const public_key &new_pubkey)
    {
-      _check_pubkey_auth(submitter, account);
+      require_auth(_self);
       CHECKC(!(old_pubkey == new_pubkey), err::PARAM_ERROR, "new pubkey must be different");
       _change_pubkey_in_active(account, old_pubkey, new_pubkey);
    }
@@ -465,6 +478,8 @@ namespace flon
       CHECKC(audit_ptr != recoverauths.end(), err::RECORD_NOT_FOUND, "account not exist");
       CHECKC(audit_ptr->auth_requirements.count(auth_contract) > 0,
           err::NO_AUTH, "no auth for create order: " + account.to_string());
+        CHECKC(std::holds_alternative<eosio::public_key>(recover_target),
+             err::PARAM_ERROR, "recover target must be a public key");
 
       map<name, int8_t> scores;
       for (auto &[key, value] : audit_ptr->auth_requirements) {

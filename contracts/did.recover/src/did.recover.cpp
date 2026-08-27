@@ -60,7 +60,7 @@ namespace flon {
       CHECKC( _db.get( order ), err::RECORD_NOT_FOUND, "order not found." )
       CHECKC( order.status == OrderStatus::PENDING, err::STATUS_ERROR,"This status cannot be pending" )
       CHECKC( order.did_certification_status != OrderStatus::FINISHED, err::STATUS_ERROR,"DID verification completed" )
-      // CHECKC( order.did_expired_at > current_time_point(), err::TIME_EXPIRED,"order already time expired")
+      CHECKC( order.did_expired_at > current_time_point(), err::TIME_EXPIRED,"order already time expired")
 
       order.did_certification_status = passed ? OrderStatus::FINISHED : OrderStatus::FAILED ;
       order.updated_at = current_time_point();
@@ -103,8 +103,8 @@ namespace flon {
       CHECKC( _db.get( order ), err::RECORD_NOT_FOUND, "order not found." )
       CHECKC( order.status == OrderStatus::PENDING, err::STATUS_ERROR,"order status must be pending." )
       CHECKC( order.did_certification_status == OrderStatus::FINISHED, err::STATUS_ERROR,"DID verification not completed" )
-      // CHECKC( order.vote_certification_status == OrderStatus::FINISHED, err::STATUS_ERROR,"Vote verification not completed" )
       CHECKC( order.asset_recast_status != OrderStatus::FINISHED, err::STATUS_ERROR,"asset recast completed" )
+      CHECKC( order.did_expired_at > current_time_point(), err::TIME_EXPIRED,"order already time expired")
 
       order.asset_recast_status = passed ? OrderStatus::FINISHED : OrderStatus::FAILED ;
       order.updated_at = current_time_point();
@@ -131,6 +131,14 @@ namespace flon {
       recover_order_t::idx_t orders(_self, _self.value);
       auto order_ptr     = orders.find(order_id);
       CHECKC( order_ptr != orders.end(), err::RECORD_NOT_FOUND, "order not found. "); 
+
+      bool authorized = has_auth(order_ptr->owner);
+      if (!authorized && has_auth(submitter)) {
+         auth_t::idx_t auths(_self, _self.value);
+         auto auth_ptr = auths.find(submitter.value);
+         authorized = auth_ptr != auths.end() && auth_ptr->actions.count(ActionType::DELORDER) > 0;
+      }
+      CHECKC(authorized, err::NO_AUTH, "submitter is not authorized to delete order");
 
       if ( order_ptr -> did_certification_status == OrderStatus::PENDING 
          || order_ptr -> did_certification_status == OrderStatus::FAILED  ){
